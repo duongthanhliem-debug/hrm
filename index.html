@@ -1597,13 +1597,16 @@ async function runAIAnalysisUI() {
 
     const raw = await callClaude(prompt);
     let text = raw.trim();
-    text = text.replace(/```[\w]*/g, '').replace(/```/g, '').trim();
-    const m = text.match(/\{[\s\S]*\}/);
-    if (m) text = m[0];
+    text = text.replace(/```json/g, '').replace(/```/g, '').trim();
+    const allM = text.match(/\{[\s\S]*\}/g);
+    if (allM && allM.length > 0) text = allM[allM.length - 1];
 
     let analysis;
     try { analysis = JSON.parse(text); }
-    catch(e) { analysis = { insight: raw, recommendation: '—', action: '—' }; }
+    catch(e) {
+      try { analysis = JSON.parse(text.replace(/,\s*}/g, '}').replace(/,\s*]/g, ']')); }
+      catch(e2) { analysis = { insight: raw, recommendation: '—', action: '—' }; }
+    }
 
     const now = new Date().toLocaleString('vi-VN');
     document.getElementById('aiStatus').innerHTML = '';
@@ -1721,10 +1724,17 @@ function handleSalesFile(input) {
         const sold = parseFloat(String(r[soldCol] || '0').replace(/,/g,'')) || 0;
         const revenue = parseFloat(String(r[revenueCol] || '0').replace(/,/g,'')) || 0;
         
-        // Skip group rows (no code, or code is same as name - group header)
-        if (!code || code === name || code.startsWith('Báo cáo')) continue;
-        // Skip combo/promo rows
+        // Only keep valid product codes: uppercase alphanumeric+underscore, 2-20 chars
+        // This filters out group headers like "BST PHÚC​", "HỒNG TRÀ​", "SUM" etc.
+        if (!code) continue;
+        if (!/^[A-Z0-9_]{2,20}$/.test(code)) continue;
+        // Must have a real product name
+        if (!name || name === 'None') continue;
+        // Skip known non-product codes
+        if (['SUM','DC','DR'].includes(code) || /^D[0-9]+$/.test(code)) continue;
+        // Skip combos / promo group headers
         if (code.startsWith('COMBO') || code.startsWith('ID_')) continue;
+        // Skip rows with zero sales
         if (sold === 0 && revenue === 0) continue;
         
         salesData.push({ productCode: code, productName: name, quantitySold: sold, revenue: revenue });
@@ -1906,27 +1916,35 @@ async function runAIResearchUI() {
       + 'Top san pham gia von cao: ' + topLines + '. '
       + 'Thoi diem hien tai: ' + seasonHint + '. '
       + 'Nhiem vu: Nghien cuu thi truong THOI GIAN THUC, phan tich xu huong, de xuat R&D. '
-      + 'Yeu cau tra ve JSON THUAN TUY (khong markdown): '
-      + '{'
-      + '"insight":"Nhan dinh xu huong thi truong tra sua Viet Nam hien tai, san pham viral, hanh vi nguoi tieu dung...",'
-      + '"trends":["xu huong 1 cu the","xu huong 2","xu huong 3","xu huong 4","xu huong 5"],'
-      + '"newProducts":['
-      + '{"name":"Ten san pham moi 1","concept":"Mo ta concept 15-20 tu","ingredients":"Nguyen lieu chinh","estimatedCost":"~XXXXXd","targetPrice":"~XXXXXd","rationale":"Li do thi truong"},'
-      + '{"name":"Ten san pham moi 2","concept":"Mo ta concept","ingredients":"Nguyen lieu","estimatedCost":"~XXXXXd","targetPrice":"~XXXXXd","rationale":"Li do"},'
-      + '{"name":"Ten san pham moi 3","concept":"Mo ta concept","ingredients":"Nguyen lieu","estimatedCost":"~XXXXXd","targetPrice":"~XXXXXd","rationale":"Li do"}'
-      + '],'
-      + '"seasonal":"De xuat san pham/chien luoc theo mua hien tai...",'
-      + '"action":"Hanh dong R&D uu tien: nen phat trien san pham gi ngay bay gio va tai sao..."'
-      + '}';
+      + 'CHU Y QUAN TRONG: Chi tra ve JSON thuan tuy. TUYET DOI KHONG dung markdown, KHONG dung backtick, KHONG giai thich gi them. '
+      + 'Chi tra ve dung 1 object JSON voi cac truong sau (viet tieng Viet co dau): '
+      + 'insight (string), trends (array of 5 strings), '
+      + 'newProducts (array of 3 objects: name/concept/ingredients/estimatedCost/targetPrice/rationale), '
+      + 'seasonal (string), action (string). '
+      + 'Bat dau ngay bang dau { va ket thuc bang }.';
 
     const raw = await callClaude(prompt);
-    let text = raw.trim().replace(/```[\w]*/g, '').replace(/```/g, '').trim();
-    const m = text.match(/\{[\s\S]*\}/);
-    if (m) text = m[0];
+    // Robust JSON extraction - handle backticks, prefix text, etc.
+    let text = raw.trim();
+    // Remove markdown code blocks
+    text = text.replace(/^```[\w]*\n?/gm, '').replace(/^```\n?/gm, '').trim();
+    // Find the JSON object - take the LAST { } block to skip any preamble
+    const allMatches = text.match(/\{[\s\S]*\}/g);
+    if (allMatches && allMatches.length > 0) text = allMatches[allMatches.length - 1];
 
     let research;
-    try { research = JSON.parse(text); }
-    catch(e) { research = { insight: raw, trends: [], newProducts: [], seasonal: '', action: '' }; }
+    try {
+      research = JSON.parse(text);
+    } catch(e) {
+      // Try to fix common issues: unescaped quotes, trailing commas
+      try {
+        const fixedText = text.replace(/,\s*}/g, '}').replace(/,\s*]/g, ']');
+        research = JSON.parse(fixedText);
+      } catch(e2) {
+        // Last resort: show raw response in insight field
+        research = { insight: raw, trends: [], newProducts: [], seasonal: 'Loi parse JSON - xem raw: ' + raw.substring(0, 200), action: '' };
+      }
+    }
 
     const nowStr = new Date().toLocaleString('vi-VN');
     document.getElementById('aiStatus').innerHTML = '';
@@ -2055,10 +2073,16 @@ async function runForecastUI() {
     }
 
     // Step 1: Aggregate sales by product code
+    // Deduplicate: only count each (code, name) pair once
     const productTotals = {};
+    const seenRows = new Set();
     data.forEach(function(item) {
       const code = item.productCode;
       if (!code) return;
+      // Dedup key: same code + same sold count = duplicate row (e.g. from "Tat ca cua hang" + individual sheets)
+      const dupKey = code + '|' + (parseFloat(item.quantitySold) || 0) + '|' + (parseFloat(item.revenue) || 0);
+      if (seenRows.has(dupKey)) return;
+      seenRows.add(dupKey);
       if (!productTotals[code]) productTotals[code] = { sold: 0, revenue: 0, name: item.productName || code };
       productTotals[code].sold += parseFloat(item.quantitySold) || 0;
       productTotals[code].revenue += parseFloat(item.revenue) || 0;
