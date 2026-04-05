@@ -555,6 +555,9 @@ tr:hover td { background: var(--gold-l); }
         <span class="topbar-subtitle"> — Phúc Tea Data Core System</span>
       </div>
       <div class="topbar-actions">
+        <button class="btn btn-secondary btn-sm" onclick="syncAllData()" id="syncBtn" title="Đồng bộ dữ liệu từ Google Sheets">
+          🔄 Đồng bộ dữ liệu
+        </button>
         <span class="topbar-mode-badge" id="topbarMode">⚖️ Đường Chung</span>
         <span class="status-dot status-offline" id="connStatus" title="Trạng thái kết nối"></span>
       </div>
@@ -817,9 +820,12 @@ tr:hover td { background: var(--gold-l); }
         <p>Phân tích chi phí thông minh bằng <strong>Claude AI</strong> — chạy thủ công hoặc tự động hàng ngày</p>
       </div>
 
-      <div class="flex gap-3 mb-6">
+      <div class="flex gap-3 mb-6" style="flex-wrap:wrap">
         <button class="btn btn-primary" onclick="runAIAnalysisUI()">
-          🤖 Chạy phân tích Claude AI ngay
+          🤖 Phân tích chi phí Claude AI
+        </button>
+        <button class="btn btn-yellow" onclick="runAIResearchUI()" style="background:linear-gradient(135deg,var(--brown),var(--brown-m));color:white">
+          🔬 AI Research — Xu hướng thị trường
         </button>
         <button class="btn btn-secondary" onclick="scheduleAI()">
           🕐 Tự động hàng ngày
@@ -827,13 +833,20 @@ tr:hover td { background: var(--gold-l); }
         <div id="aiStatus" class="flex items-center gap-3 text-sm text-muted"></div>
       </div>
 
+      <!-- AI Tabs -->
+      <div class="tabs" id="aiTabs">
+        <button class="tab-btn active" onclick="switchAITab('analysis',this)">📊 Cost Analysis</button>
+        <button class="tab-btn" onclick="switchAITab('research',this)">🔬 Market Research</button>
+      </div>
+
       <div id="aiResultPanel">
         <div class="empty-state">
           <div class="empty-icon">🤖</div>
           <div class="empty-title">Chưa có phân tích</div>
-          <div class="empty-desc">Bấm "Chạy phân tích AI ngay" để bắt đầu. Cần cấu hình OpenAI API Key trong Cài đặt.</div>
+          <div class="empty-desc">Bấm một trong hai nút AI phía trên để bắt đầu. Cần cấu hình Anthropic API Key trong Cài đặt.</div>
         </div>
       </div>
+      <div id="aiResearchPanel" style="display:none"></div>
     </div>
 
     <!-- ===== PAGE: FORECAST ===== -->
@@ -841,6 +854,21 @@ tr:hover td { background: var(--gold-l); }
       <div class="page-header">
         <h1>📈 Forecasting</h1>
         <p>Dự báo nhu cầu nguyên vật liệu dựa trên dữ liệu bán hàng</p>
+      </div>
+
+      <!-- Forecast Mode Toggle -->
+      <div style="display:flex;align-items:center;gap:16px;margin-bottom:20px;padding:14px 18px;background:var(--white);border:1.5px solid var(--border);border-radius:var(--radius)">
+        <span style="font-size:13px;font-weight:700;color:var(--brown)">Chế độ dự báo:</span>
+        <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:13px;font-weight:600;color:var(--brown)">
+          <input type="radio" name="forecastMode" value="standard" checked onchange="state.forecastMode='standard'"
+            style="accent-color:var(--gold);width:16px;height:16px">
+          <span>📦 Tiêu chuẩn <span style="font-size:11px;font-weight:400;color:var(--gray)">(có BTP + NVL)</span></span>
+        </label>
+        <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:13px;font-weight:600;color:var(--brown)">
+          <input type="radio" name="forecastMode" value="rawonly" onchange="state.forecastMode='rawonly'"
+            style="accent-color:var(--gold);width:16px;height:16px">
+          <span>🧪 NVL thô <span style="font-size:11px;font-weight:400;color:var(--gray)">(không BTP — quy đổi hoàn toàn)</span></span>
+        </label>
       </div>
 
       <div class="grid-2 mb-6">
@@ -966,10 +994,13 @@ tr:hover td { background: var(--gold-l); }
 // ============================================================
 const state = {
   mode: 'ĐC',
+  forecastMode: 'standard',
   settings: {},
   products: [],
   ingredients: [],
-  lastAIRun: null
+  lastAIRun: null,
+  _recipes: null,
+  _btpRecipes: null
 };
 
 // ============================================================
@@ -1712,6 +1743,257 @@ function handleSalesFile(input) {
   reader.readAsArrayBuffer(file);
 }
 
+// ============================================================
+// DATA SYNC
+// ============================================================
+async function syncAllData() {
+  const btn = document.getElementById('syncBtn');
+  btn.disabled = true;
+  btn.textContent = '⏳ Đang đồng bộ...';
+  const start = Date.now();
+  try {
+    // Clear caches
+    state.products = [];
+    state.ingredients = [];
+    state._recipes = null;
+    state._btpRecipes = null;
+
+    // Reload in parallel
+    const [prodRes, ingRes] = await Promise.all([
+      callAppsScript({ action: 'getAllProductCosts' }),
+      callAppsScript({ action: 'getIngredients' })
+    ]);
+
+    if (prodRes.data) state.products = prodRes.data;
+    if (ingRes.data) state.ingredients = ingRes.data;
+
+    const ms = Date.now() - start;
+    btn.textContent = '✅ Đã đồng bộ';
+    btn.style.color = 'var(--green)';
+    setTimeout(function() {
+      btn.textContent = '🔄 Đồng bộ dữ liệu';
+      btn.style.color = '';
+      btn.disabled = false;
+    }, 2500);
+
+    // Refresh visible page
+    const activePage = document.querySelector('.page.active');
+    if (activePage) {
+      const pid = activePage.id.replace('page-', '');
+      if (pid === 'dashboard') loadDashboard();
+      else if (pid === 'products') renderProductsTable(state.products);
+      else if (pid === 'ingredients') renderIngredientsTable(state.ingredients);
+    }
+
+    // Show toast
+    showToast('Đã đồng bộ ' + state.products.length + ' sản phẩm, ' + state.ingredients.length + ' NVL trong ' + ms + 'ms', 'success');
+  } catch(e) {
+    btn.textContent = '❌ Lỗi đồng bộ';
+    btn.style.color = 'var(--red)';
+    setTimeout(function() {
+      btn.textContent = '🔄 Đồng bộ dữ liệu';
+      btn.style.color = '';
+      btn.disabled = false;
+    }, 3000);
+    showToast('Lỗi đồng bộ: ' + e.message, 'error');
+  }
+}
+
+function showToast(msg, type) {
+  let toast = document.getElementById('globalToast');
+  if (!toast) {
+    toast = document.createElement('div');
+    toast.id = 'globalToast';
+    toast.style.cssText = 'position:fixed;bottom:24px;right:24px;padding:12px 18px;border-radius:10px;font-size:13px;font-weight:600;z-index:9999;transform:translateY(80px);opacity:0;transition:all 0.3s;max-width:340px;box-shadow:0 4px 20px rgba(0,0,0,0.15)';
+    document.body.appendChild(toast);
+  }
+  toast.textContent = msg;
+  if (type === 'success') {
+    toast.style.background = 'var(--green)';
+    toast.style.color = '#fff';
+  } else if (type === 'error') {
+    toast.style.background = 'var(--red)';
+    toast.style.color = '#fff';
+  } else {
+    toast.style.background = 'var(--gold)';
+    toast.style.color = 'var(--brown)';
+  }
+  toast.style.transform = 'translateY(0)';
+  toast.style.opacity = '1';
+  setTimeout(function() {
+    toast.style.transform = 'translateY(80px)';
+    toast.style.opacity = '0';
+  }, 3500);
+}
+
+// ============================================================
+// AI TAB SWITCH
+// ============================================================
+function switchAITab(tab, el) {
+  document.querySelectorAll('#aiTabs .tab-btn').forEach(function(b) { b.classList.remove('active'); });
+  el.classList.add('active');
+  document.getElementById('aiResultPanel').style.display = tab === 'analysis' ? 'block' : 'none';
+  document.getElementById('aiResearchPanel').style.display = tab === 'research' ? 'block' : 'none';
+}
+
+// ============================================================
+// AI RESEARCH - Real-time market research
+// ============================================================
+async function runAIResearchUI() {
+  const key = state.settings.openaiKey;
+  if (!key) {
+    document.getElementById('aiResearchPanel').innerHTML =
+      '<div class="alert alert-warning">Can Anthropic API Key trong Cai dat.</div>';
+    document.getElementById('aiResearchPanel').style.display = 'block';
+    document.getElementById('aiResultPanel').style.display = 'none';
+    // switch tab
+    const tabs = document.querySelectorAll('#aiTabs .tab-btn');
+    tabs.forEach(function(b) { b.classList.remove('active'); });
+    if (tabs[1]) tabs[1].classList.add('active');
+    return;
+  }
+
+  // Switch to research tab
+  const tabs = document.querySelectorAll('#aiTabs .tab-btn');
+  tabs.forEach(function(b) { b.classList.remove('active'); });
+  if (tabs[1]) tabs[1].classList.add('active');
+  document.getElementById('aiResultPanel').style.display = 'none';
+  document.getElementById('aiResearchPanel').style.display = 'block';
+
+  // Load products if needed
+  if (!state.products.length) {
+    try {
+      const res = await callAppsScript({ action: 'getAllProductCosts' });
+      if (res.data) state.products = res.data;
+    } catch(e) {}
+  }
+
+  document.getElementById('aiStatus').innerHTML = '<div class="spinner"></div> AI Research dang chay...';
+  document.getElementById('aiResearchPanel').innerHTML =
+    '<div class="ai-panel">' +
+    '<div class="loader" style="color:rgba(255,255,255,0.7)">' +
+    '<div class="spinner" style="border-color:rgba(255,255,255,0.2);border-top-color:var(--gold)"></div>' +
+    ' 🔬 Claude AI dang phan tich xu huong thi truong va R&D...' +
+    '</div></div>';
+
+  try {
+    const prods = state.products.filter(function(p) { return p.cost > 0; });
+    const modeName = state.mode === 'DC' ? 'Duong Chung' : 'Tach Duong';
+
+    // Group products by category
+    const groups = {};
+    prods.forEach(function(p) {
+      const g = p.group || 'Khac';
+      if (!groups[g]) groups[g] = 0;
+      groups[g]++;
+    });
+    const groupSummary = Object.keys(groups).map(function(g) { return g + ': ' + groups[g] + ' san pham'; }).join(', ');
+
+    const topCost = prods.slice().sort(function(a, b) { return b.cost - a.cost; }).slice(0, 8);
+    const topLines = topCost.map(function(p) {
+      return p.name + ' (' + Math.round(p.cost).toLocaleString('vi-VN') + 'd)';
+    }).join('; ');
+
+    const now = new Date();
+    const month = now.getMonth() + 1;
+    const seasonHint = month >= 4 && month <= 9
+      ? 'mua he (thang ' + month + '), nhu cau do uong lanh tang cao'
+      : 'mua dong/Tet (thang ' + month + '), nhu cau do uong am, tra sua truyen thong tang';
+
+    const prompt = 'Ban la chuyen gia R&D va nghien cuu thi truong F&B tai Viet Nam, chuyen ve tra sua va do uong. '
+      + 'Phuc Tea la chuoi tra sua franchise voi ' + prods.length + ' san pham. '
+      + 'Nhom san pham: ' + groupSummary + '. '
+      + 'Top san pham gia von cao: ' + topLines + '. '
+      + 'Thoi diem hien tai: ' + seasonHint + '. '
+      + 'Nhiem vu: Nghien cuu thi truong THOI GIAN THUC, phan tich xu huong, de xuat R&D. '
+      + 'Yeu cau tra ve JSON THUAN TUY (khong markdown): '
+      + '{'
+      + '"insight":"Nhan dinh xu huong thi truong tra sua Viet Nam hien tai, san pham viral, hanh vi nguoi tieu dung...",'
+      + '"trends":["xu huong 1 cu the","xu huong 2","xu huong 3","xu huong 4","xu huong 5"],'
+      + '"newProducts":['
+      + '{"name":"Ten san pham moi 1","concept":"Mo ta concept 15-20 tu","ingredients":"Nguyen lieu chinh","estimatedCost":"~XXXXXd","targetPrice":"~XXXXXd","rationale":"Li do thi truong"},'
+      + '{"name":"Ten san pham moi 2","concept":"Mo ta concept","ingredients":"Nguyen lieu","estimatedCost":"~XXXXXd","targetPrice":"~XXXXXd","rationale":"Li do"},'
+      + '{"name":"Ten san pham moi 3","concept":"Mo ta concept","ingredients":"Nguyen lieu","estimatedCost":"~XXXXXd","targetPrice":"~XXXXXd","rationale":"Li do"}'
+      + '],'
+      + '"seasonal":"De xuat san pham/chien luoc theo mua hien tai...",'
+      + '"action":"Hanh dong R&D uu tien: nen phat trien san pham gi ngay bay gio va tai sao..."'
+      + '}';
+
+    const raw = await callClaude(prompt);
+    let text = raw.trim().replace(/```[\w]*/g, '').replace(/```/g, '').trim();
+    const m = text.match(/\{[\s\S]*\}/);
+    if (m) text = m[0];
+
+    let research;
+    try { research = JSON.parse(text); }
+    catch(e) { research = { insight: raw, trends: [], newProducts: [], seasonal: '', action: '' }; }
+
+    const nowStr = new Date().toLocaleString('vi-VN');
+    document.getElementById('aiStatus').innerHTML = '';
+
+    const trendsHTML = (research.trends || []).map(function(t, i) {
+      return '<div style="display:flex;gap:10px;padding:8px 0;border-bottom:1px solid rgba(255,255,255,0.08)">' +
+        '<span style="background:var(--gold);color:var(--brown);border-radius:50%;width:22px;height:22px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;flex-shrink:0">' + (i+1) + '</span>' +
+        '<span style="color:rgba(255,255,255,0.9);font-size:13px">' + t + '</span>' +
+      '</div>';
+    }).join('');
+
+    const newProdsHTML = (research.newProducts || []).map(function(p) {
+      return '<div style="background:rgba(255,255,255,0.06);border-radius:10px;padding:14px;margin-bottom:10px;border:1px solid rgba(245,166,35,0.2)">' +
+        '<div style="font-size:14px;font-weight:800;color:var(--gold);margin-bottom:6px">✨ ' + (p.name || '') + '</div>' +
+        '<div style="font-size:12px;color:rgba(255,255,255,0.8);margin-bottom:8px">' + (p.concept || '') + '</div>' +
+        '<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;font-size:11px">' +
+          '<div style="background:rgba(0,0,0,0.2);padding:6px 8px;border-radius:6px"><div style="color:var(--gold-m)">NGUYEN LIEU</div><div style="color:white;margin-top:2px">' + (p.ingredients || '—') + '</div></div>' +
+          '<div style="background:rgba(0,0,0,0.2);padding:6px 8px;border-radius:6px"><div style="color:var(--gold-m)">GIA VON</div><div style="color:white;margin-top:2px">' + (p.estimatedCost || '—') + '</div></div>' +
+          '<div style="background:rgba(0,0,0,0.2);padding:6px 8px;border-radius:6px"><div style="color:var(--gold-m)">GIA BAN</div><div style="color:white;margin-top:2px">' + (p.targetPrice || '—') + '</div></div>' +
+        '</div>' +
+        '<div style="font-size:11px;color:rgba(255,255,255,0.6);margin-top:8px;font-style:italic">💡 ' + (p.rationale || '') + '</div>' +
+      '</div>';
+    }).join('');
+
+    document.getElementById('aiResearchPanel').innerHTML =
+      '<div class="ai-panel">' +
+        '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:8px">' +
+          '<div style="font-size:17px;font-weight:800;color:white">🔬 AI Research — Xu huong & R&D</div>' +
+          '<div style="font-size:11px;color:var(--gold-m)">' + nowStr + ' · Real-time · ' + prods.length + ' san pham</div>' +
+        '</div>' +
+
+        '<div class="ai-section">' +
+          '<div class="ai-section-label">📊 Nhan dinh thi truong</div>' +
+          '<div class="ai-section-content">' + (research.insight || '—') + '</div>' +
+        '</div>' +
+
+        '<div class="ai-section">' +
+          '<div class="ai-section-label">🔥 Top 5 xu huong hien tai</div>' +
+          '<div>' + (trendsHTML || '<div style="color:rgba(255,255,255,0.5)">Khong co du lieu</div>') + '</div>' +
+        '</div>' +
+
+        '<div class="ai-section">' +
+          '<div class="ai-section-label">✨ De xuat san pham moi (R&D)</div>' +
+          (newProdsHTML || '<div style="color:rgba(255,255,255,0.5)">Khong co de xuat</div>') +
+        '</div>' +
+
+        '<div class="ai-section">' +
+          '<div class="ai-section-label">🌸 Chien luoc theo mua</div>' +
+          '<div class="ai-section-content">' + (research.seasonal || '—') + '</div>' +
+        '</div>' +
+
+        '<div class="ai-section">' +
+          '<div class="ai-section-label">⚡ Hanh dong R&D uu tien</div>' +
+          '<div class="ai-section-content">' + (research.action || '—') + '</div>' +
+        '</div>' +
+      '</div>';
+
+  } catch(e) {
+    document.getElementById('aiStatus').innerHTML = '';
+    document.getElementById('aiResearchPanel').innerHTML =
+      '<div class="alert alert-error">❌ AI Research loi: ' + e.message + '</div>';
+  }
+}
+
+// ============================================================
+// ADVANCED FORECAST - Mode 2 (Raw materials only)
+// ============================================================
 async function runForecastUI() {
   let data = [];
 
@@ -1721,7 +2003,7 @@ async function runForecastUI() {
     try { data = JSON.parse(jsonText); }
     catch(e) {
       document.getElementById('forecastResult').innerHTML =
-        '<div class="alert alert-error">JSON không hợp lệ: ' + e.message + '</div>';
+        '<div class="alert alert-error">JSON khong hop le: ' + e.message + '</div>';
       return;
     }
   }
@@ -1731,22 +2013,23 @@ async function runForecastUI() {
 
   if (!data || !data.length) {
     document.getElementById('forecastResult').innerHTML =
-      '<div class="alert alert-warning">Chưa có dữ liệu bán hàng. Vui lòng upload file Excel từ IPOS hoặc dán JSON.</div>';
+      '<div class="alert alert-warning">Chua co du lieu ban hang. Vui long upload file Excel tu IPOS hoac dan JSON.</div>';
     return;
   }
 
   const days = parseInt(document.getElementById('forecastDays').value);
+  const forecastMode = state.forecastMode || 'standard';
+  const modeLabel = forecastMode === 'rawonly' ? 'NVL tho (khong BTP)' : 'Tieu chuan (BTP + NVL)';
+
   document.getElementById('forecastResult').innerHTML =
-    '<div class="loader"><div class="spinner"></div> Đang tạo dự báo...</div>';
+    '<div class="loader"><div class="spinner"></div> Dang tao du bao (' + modeLabel + ')...</div>';
   document.getElementById('forecastSummary').querySelector('.card-body').innerHTML =
-    '<div class="loader"><div class="spinner"></div> Đang tính...</div>';
+    '<div class="loader"><div class="spinner"></div> Dang tinh...</div>';
 
   try {
-    // ── Client-side forecast: load recipes then expand locally ──
-    // Step 1: get recipes from Apps Script (small payload, no problem)
+    // Load recipes (product → ingredients/BTP)
     const recipesRes = await callAppsScript({ action: 'getRecipes' });
     const ingRes = await callAppsScript({ action: 'getIngredients' });
-
     if (recipesRes.error || ingRes.error) throw new Error(recipesRes.error || ingRes.error);
 
     const recipes = recipesRes.data || {};
@@ -1754,7 +2037,24 @@ async function runForecastUI() {
     const ingMap = {};
     ingList.forEach(function(i) { ingMap[i.code] = i; });
 
-    // Step 2: aggregate sales by product code
+    // For Mode 2: also load BTP recipes (BTP → raw ingredients)
+    let btpRecipes = {};
+    if (forecastMode === 'rawonly') {
+      // Use cached if available
+      if (state._btpRecipes && state._btpRecipes[state.mode]) {
+        btpRecipes = state._btpRecipes[state.mode];
+      } else {
+        const btpSheetName = state.mode === 'TD' ? 'Dinh luong BTP - TD' : '3. Dinh luong BTP - DC';
+        const btpRes = await callAppsScript({ action: 'getBTPRecipes' });
+        if (!btpRes.error && btpRes.data) {
+          btpRecipes = btpRes.data;
+          if (!state._btpRecipes) state._btpRecipes = {};
+          state._btpRecipes[state.mode] = btpRecipes;
+        }
+      }
+    }
+
+    // Step 1: Aggregate sales by product code
     const productTotals = {};
     data.forEach(function(item) {
       const code = item.productCode;
@@ -1764,56 +2064,105 @@ async function runForecastUI() {
       productTotals[code].revenue += parseFloat(item.revenue) || 0;
     });
 
-    // Step 3: expand product → ingredients
-    const ingredientForecast = {};
+    // Step 2: Expand product → ingredients/BTP
+    const ingredientForecast = {}; // final aggregation
+    const btpDemand = {}; // intermediate BTP quantities for Mode 2
     const warnings = [];
 
     Object.keys(productTotals).forEach(function(code) {
       const totals = productTotals[code];
       const recipe = recipes[code];
-      if (!recipe) { warnings.push('Không có công thức: ' + code); return; }
+      if (!recipe) { warnings.push(code); return; }
+
       (recipe.ingredients || []).forEach(function(item) {
         const projectedQty = totals.sold * item.qty * days;
-        if (!ingredientForecast[item.code]) {
-          ingredientForecast[item.code] = { code: item.code, name: item.name, unit: item.unit, totalQty: 0, totalCost: 0 };
+        const isBTP = item.code && item.code.startsWith('BTP');
+
+        if (forecastMode === 'rawonly' && isBTP) {
+          // Track BTP demand for later expansion
+          if (!btpDemand[item.code]) {
+            btpDemand[item.code] = { code: item.code, name: item.name, unit: item.unit, totalQty: 0 };
+          }
+          btpDemand[item.code].totalQty += projectedQty;
+        } else {
+          // Add directly to forecast (standard mode, or raw NVL in rawonly mode)
+          if (!ingredientForecast[item.code]) {
+            ingredientForecast[item.code] = { code: item.code, name: item.name, unit: item.unit, totalQty: 0, totalCost: 0, isBTP: isBTP };
+          }
+          ingredientForecast[item.code].totalQty += projectedQty;
+          ingredientForecast[item.code].totalCost += projectedQty * (item.price || 0);
         }
-        ingredientForecast[item.code].totalQty += projectedQty;
-        ingredientForecast[item.code].totalCost += projectedQty * (item.price || 0);
       });
     });
+
+    // Step 3 (Mode 2 only): Expand BTP demand → raw ingredients using BTP recipes
+    if (forecastMode === 'rawonly' && Object.keys(btpDemand).length > 0) {
+      Object.keys(btpDemand).forEach(function(btpCode) {
+        const btpItem = btpDemand[btpCode];
+        const btpRecipe = btpRecipes[btpCode];
+
+        if (!btpRecipe || !btpRecipe.ingredients || !btpRecipe.ingredients.length) {
+          // BTP recipe not found — add as-is with warning
+          warnings.push('Khong co cong thuc BTP: ' + btpCode);
+          if (!ingredientForecast[btpCode]) {
+            ingredientForecast[btpCode] = { code: btpCode, name: btpItem.name + ' (BTP—chua co CT)', unit: btpItem.unit, totalQty: btpItem.totalQty, totalCost: 0, isBTP: true };
+          } else {
+            ingredientForecast[btpCode].totalQty += btpItem.totalQty;
+          }
+          return;
+        }
+
+        // Expand BTP → raw ingredients
+        btpRecipe.ingredients.forEach(function(rawIng) {
+          // rawIng.qty is per 1 unit of BTP
+          const rawQty = btpItem.totalQty * rawIng.qty;
+          if (!ingredientForecast[rawIng.code]) {
+            ingredientForecast[rawIng.code] = { code: rawIng.code, name: rawIng.name, unit: rawIng.unit, totalQty: 0, totalCost: 0, isBTP: false };
+          }
+          ingredientForecast[rawIng.code].totalQty += rawQty;
+          ingredientForecast[rawIng.code].totalCost += rawQty * (rawIng.price || 0);
+        });
+      });
+    }
 
     const forecastList = Object.values(ingredientForecast).sort(function(a, b) { return b.totalCost - a.totalCost; });
     const totalCost = forecastList.reduce(function(s, i) { return s + i.totalCost; }, 0);
     const productCount = Object.keys(productTotals).length;
+    const btpCount = Object.keys(btpDemand).length;
 
     // Summary card
     document.getElementById('forecastSummary').querySelector('.card-body').innerHTML =
       '<div class="stats-grid" style="grid-template-columns:1fr 1fr;gap:12px">' +
         '<div class="stat-card green" style="padding:12px">' +
-          '<div class="stat-label">Sản phẩm</div>' +
+          '<div class="stat-label">San pham</div>' +
           '<div class="stat-value" style="font-size:20px">' + productCount + '</div>' +
         '</div>' +
         '<div class="stat-card yellow" style="padding:12px">' +
-          '<div class="stat-label">Dự báo ' + days + ' ngày</div>' +
+          '<div class="stat-label">Du bao ' + days + ' ngay</div>' +
           '<div class="stat-value" style="font-size:20px">' + forecastList.length + '</div>' +
-          '<div class="stat-sub">loại NVL</div>' +
+          '<div class="stat-sub">loai ' + (forecastMode === 'rawonly' ? 'NVL tho' : 'NVL/BTP') + '</div>' +
         '</div>' +
       '</div>' +
+      (forecastMode === 'rawonly' && btpCount > 0
+        ? '<div style="margin-top:8px;padding:8px 12px;background:var(--green-l);border-radius:8px;font-size:12px;color:var(--green);font-weight:600">✅ Da quy doi ' + btpCount + ' BTP thanh NVL tho</div>'
+        : '') +
       '<div style="margin-top:12px;padding:12px;background:var(--gold-l);border-radius:8px;border:1px solid var(--gold)">' +
-        '<div style="font-size:11px;font-weight:700;color:var(--brown-m);text-transform:uppercase">Chi phí dự báo</div>' +
+        '<div style="font-size:11px;font-weight:700;color:var(--brown-m);text-transform:uppercase">Chi phi du bao</div>' +
         '<div style="font-size:20px;font-weight:800;color:var(--brown)">' + fmt(totalCost) + '</div>' +
       '</div>';
 
     const warningsHTML = warnings.length
-      ? '<div class="alert alert-warning" style="margin-bottom:16px">⚠️ ' + warnings.slice(0,5).join(' · ') + (warnings.length > 5 ? ' (+' + (warnings.length-5) + ' khác)' : '') + '</div>'
+      ? '<div class="alert alert-warning" style="margin-bottom:16px">⚠️ Khong co cong thuc: ' + warnings.slice(0, 5).join(' · ') + (warnings.length > 5 ? ' (+' + (warnings.length - 5) + ' khac)' : '') + '</div>'
       : '';
 
-    // Forecast list
-    const forecastRows = forecastList.slice(0, 30).map(function(item, i) {
+    const forecastRows = forecastList.slice(0, 40).map(function(item, i) {
+      const badgeHTML = item.isBTP
+        ? '<span style="font-size:9px;background:var(--gold-l);color:var(--brown-m);padding:1px 5px;border-radius:4px;margin-left:4px;font-weight:700">BTP</span>'
+        : '';
       return '<div class="forecast-card">' +
-        '<div class="forecast-rank">' + (i+1) + '</div>' +
+        '<div class="forecast-rank">' + (i + 1) + '</div>' +
         '<div class="forecast-info">' +
-          '<div class="forecast-name">' + item.name + '</div>' +
+          '<div class="forecast-name">' + item.name + badgeHTML + '</div>' +
           '<div class="forecast-unit">' + item.code + ' · ' + (item.unit || '') + '</div>' +
         '</div>' +
         '<div class="forecast-qty">' +
@@ -1829,8 +2178,8 @@ async function runForecastUI() {
         '<div class="card-header">' +
           '<span class="card-icon">📦</span>' +
           '<div>' +
-            '<div class="card-title">Dự báo nhu cầu NVL — ' + days + ' ngày tới</div>' +
-            '<div class="card-subtitle">Dựa trên ' + data.length + ' dòng bán hàng · xếp theo chi phí</div>' +
+            '<div class="card-title">Du bao nhu cau NVL — ' + days + ' ngay toi</div>' +
+            '<div class="card-subtitle">Mode: <strong>' + modeLabel + '</strong> · ' + data.length + ' dong ban hang</div>' +
           '</div>' +
         '</div>' +
         '<div class="card-body">' + forecastRows + '</div>' +
