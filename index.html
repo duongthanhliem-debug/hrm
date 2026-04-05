@@ -4,38 +4,60 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Phúc Tea – Data Core System</title>
+<script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
 /* ===== DESIGN TOKENS ===== */
 :root {
-  --green-900: #0a2e1a;
-  --green-800: #0f4a2c;
-  --green-700: #166534;
-  --green-600: #16a34a;
-  --green-500: #22c55e;
-  --green-400: #4ade80;
-  --green-100: #dcfce7;
-  --yellow-400: #facc15;
-  --yellow-300: #fde047;
-  --amber-500: #f59e0b;
-  --red-400: #f87171;
-  --red-500: #ef4444;
-  --white: #ffffff;
-  --gray-50: #f8fafc;
-  --gray-100: #f1f5f9;
-  --gray-200: #e2e8f0;
-  --gray-300: #cbd5e1;
-  --gray-400: #94a3b8;
-  --gray-600: #475569;
-  --gray-700: #334155;
-  --gray-800: #1e293b;
-  --gray-900: #0f172a;
+  /* === P&L Design System === */
+  --gold: #F5A623;
+  --gold-l: #FDF3E3;
+  --gold-m: #F7C56E;
+  --brown: #3D2B1F;
+  --brown-m: #6B4226;
+  --brown-l: #9C6B47;
+  --cream: #FAF7F2;
+  --white: #fff;
+  --border: #E8E0D4;
+  --red: #E53E3E;
+  --red-l: #FFF5F5;
+  --green: #2D8248;
+  --green-l: #F0FFF4;
+  --blue: #2B6CB0;
+  --blue-l: #EBF8FF;
+  --gray: #718096;
+  --gray-l: #F7F8FA;
+
+  /* === Aliases for existing CSS === */
+  --green-900: #2D1B0E;
+  --green-800: #3D2B1F;
+  --green-700: #6B4226;
+  --green-600: #F5A623;
+  --green-500: #F5A623;
+  --green-400: #F7C56E;
+  --green-100: #FDF3E3;
+  --yellow-400: #F5A623;
+  --yellow-300: #F7C56E;
+  --amber-500: #F5A623;
+  --red-400: #E53E3E;
+  --red-500: #E53E3E;
+  --gray-50: #FAF7F2;
+  --gray-100: #F7F8FA;
+  --gray-200: #E8E0D4;
+  --gray-300: #d4c8bc;
+  --gray-400: #718096;
+  --gray-500: #718096;
+  --gray-600: #6B4226;
+  --gray-700: #3D2B1F;
+  --gray-800: #3D2B1F;
+  --gray-900: #3D2B1F;
+
   --sidebar-w: 240px;
   --header-h: 60px;
   --radius: 12px;
-  --shadow-sm: 0 1px 3px rgba(0,0,0,0.08);
-  --shadow-md: 0 4px 16px rgba(0,0,0,0.1);
-  --shadow-lg: 0 8px 32px rgba(0,0,0,0.15);
+  --shadow-sm: 0 2px 12px rgba(61,43,31,.08);
+  --shadow-md: 0 4px 24px rgba(61,43,31,.12);
+  --shadow-lg: 0 8px 32px rgba(61,43,31,.18);
   --transition: 0.2s cubic-bezier(0.4,0,0.2,1);
 }
 
@@ -44,8 +66,8 @@
 html { font-size: 14px; scroll-behavior: smooth; }
 body {
   font-family: 'Be Vietnam Pro', sans-serif;
-  background: var(--gray-50);
-  color: var(--gray-800);
+  background: var(--cream);
+  color: var(--brown);
   line-height: 1.6;
   overflow-x: hidden;
 }
@@ -60,7 +82,7 @@ a { text-decoration: none; color: inherit; }
 .sidebar {
   width: var(--sidebar-w);
   min-height: 100vh;
-  background: var(--green-900);
+  background: var(--brown);
   display: flex;
   flex-direction: column;
   position: fixed;
@@ -71,7 +93,7 @@ a { text-decoration: none; color: inherit; }
 
 .sidebar-logo {
   padding: 20px 18px 16px;
-  border-bottom: 1px solid rgba(255,255,255,0.08);
+  border-bottom: 2px solid var(--gold);
 }
 .logo-badge {
   display: flex;
@@ -80,39 +102,40 @@ a { text-decoration: none; color: inherit; }
 }
 .logo-icon {
   width: 36px; height: 36px;
-  background: linear-gradient(135deg, var(--green-500), var(--yellow-400));
+  background: var(--gold);
   border-radius: 10px;
   display: flex; align-items: center; justify-content: center;
   font-size: 18px;
 }
 .logo-text { flex: 1; }
 .logo-title { font-size: 13px; font-weight: 800; color: var(--white); letter-spacing: 0.3px; line-height: 1.2; }
-.logo-sub { font-size: 10px; color: var(--green-400); font-weight: 500; letter-spacing: 1px; text-transform: uppercase; }
+.logo-sub { font-size: 10px; color: var(--gold); font-weight: 500; letter-spacing: 1px; text-transform: uppercase; }
 
 /* Mode Toggle */
 .mode-toggle {
-  margin: 12px 14px;
-  background: rgba(255,255,255,0.06);
-  border-radius: 10px;
-  padding: 4px;
+  margin: 10px 12px;
+  background: rgba(255,255,255,0.08);
+  border-radius: 8px;
+  padding: 3px;
   display: flex;
   gap: 2px;
+  border: 1px solid rgba(245,166,35,0.2);
 }
 .mode-btn {
   flex: 1;
-  padding: 7px 8px;
-  border-radius: 7px;
+  padding: 7px 6px;
+  border-radius: 6px;
   font-size: 11px;
   font-weight: 700;
-  color: var(--gray-400);
+  color: rgba(255,255,255,0.5);
   background: transparent;
   transition: all var(--transition);
   text-align: center;
 }
 .mode-btn.active {
-  background: var(--green-600);
-  color: var(--white);
-  box-shadow: 0 2px 8px rgba(22,163,74,0.4);
+  background: var(--gold);
+  color: var(--brown);
+  box-shadow: 0 2px 8px rgba(245,166,35,0.4);
 }
 
 /* Nav */
@@ -121,7 +144,7 @@ a { text-decoration: none; color: inherit; }
 .nav-label {
   font-size: 9.5px;
   font-weight: 700;
-  color: var(--green-400);
+  color: var(--gold);
   letter-spacing: 1.2px;
   text-transform: uppercase;
   padding: 8px 8px 4px;
@@ -137,23 +160,24 @@ a { text-decoration: none; color: inherit; }
   transition: all var(--transition);
   margin-bottom: 1px;
 }
-.nav-item:hover { background: rgba(255,255,255,0.07); color: var(--white); }
+.nav-item:hover { background: rgba(245,166,35,0.12); color: var(--gold); }
 .nav-item.active {
-  background: linear-gradient(135deg, var(--green-700), var(--green-800));
-  color: var(--white);
-  box-shadow: 0 2px 8px rgba(22,163,74,0.3);
+  background: linear-gradient(135deg, rgba(245,166,35,0.2), rgba(245,166,35,0.1));
+  color: var(--gold);
+  border-left: 2px solid var(--gold);
+  box-shadow: none;
 }
 .nav-item .nav-icon { font-size: 16px; width: 20px; text-align: center; flex-shrink: 0; }
 .nav-badge {
   margin-left: auto;
-  background: var(--green-600);
-  color: white;
+  background: rgba(245,166,35,0.2);
+  color: var(--gold-m);
   font-size: 9px;
   font-weight: 700;
   padding: 1px 6px;
   border-radius: 99px;
 }
-.nav-badge.priority { background: var(--yellow-400); color: var(--gray-900); }
+.nav-badge.priority { background: var(--gold); color: var(--brown); }
 
 /* Sidebar footer */
 .sidebar-footer { padding: 12px 14px; border-top: 1px solid rgba(255,255,255,0.07); }
@@ -161,9 +185,9 @@ a { text-decoration: none; color: inherit; }
   width: 100%;
   display: flex; align-items: center; gap: 8px;
   padding: 10px 12px;
-  background: linear-gradient(135deg, var(--yellow-400), var(--amber-500));
+  background: var(--gold);
   border-radius: 9px;
-  color: var(--gray-900);
+  color: var(--brown);
   font-size: 12px;
   font-weight: 700;
   transition: all var(--transition);
@@ -183,13 +207,13 @@ a { text-decoration: none; color: inherit; }
 .topbar {
   height: var(--header-h);
   background: var(--white);
-  border-bottom: 1px solid var(--gray-200);
+  border-bottom: 2px solid var(--gold);
   display: flex; align-items: center;
   padding: 0 24px;
   gap: 16px;
   position: sticky; top: 0; z-index: 50;
 }
-.topbar-title { font-size: 16px; font-weight: 700; color: var(--gray-800); flex: 1; }
+.topbar-title { font-size: 16px; font-weight: 700; color: var(--brown); flex: 1; }
 .topbar-subtitle { font-size: 12px; color: var(--gray-400); font-weight: 400; }
 .topbar-actions { display: flex; gap: 8px; align-items: center; }
 .topbar-mode-badge {
@@ -197,9 +221,9 @@ a { text-decoration: none; color: inherit; }
   border-radius: 99px;
   font-size: 11px;
   font-weight: 700;
-  background: var(--green-100);
-  color: var(--green-700);
-  border: 1px solid var(--green-200);
+  background: var(--gold-l);
+  color: var(--brown-m);
+  border: 1px solid var(--gold);
 }
 
 /* Page Content */
@@ -209,20 +233,20 @@ a { text-decoration: none; color: inherit; }
 
 /* ===== COMPONENT: PAGE HEADER ===== */
 .page-header { margin-bottom: 24px; }
-.page-header h1 { font-size: 22px; font-weight: 800; color: var(--gray-900); }
+.page-header h1 { font-size: 22px; font-weight: 800; color: var(--brown); }
 .page-header p { font-size: 13px; color: var(--gray-500); margin-top: 2px; }
 
 /* ===== COMPONENT: CARDS ===== */
 .card {
   background: var(--white);
   border-radius: var(--radius);
-  border: 1px solid var(--gray-200);
+  border: 1.5px solid var(--border);
   box-shadow: var(--shadow-sm);
   overflow: hidden;
 }
 .card-header {
   padding: 16px 20px;
-  border-bottom: 1px solid var(--gray-100);
+  border-bottom: 1px solid var(--border);
   display: flex; align-items: center; gap: 12px;
 }
 .card-title { font-size: 14px; font-weight: 700; color: var(--gray-800); }
@@ -234,7 +258,7 @@ a { text-decoration: none; color: inherit; }
 .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-bottom: 24px; }
 .stat-card {
   background: var(--white);
-  border: 1px solid var(--gray-200);
+  border: 1.5px solid var(--border);
   border-radius: var(--radius);
   padding: 18px 20px;
   position: relative;
@@ -247,10 +271,10 @@ a { text-decoration: none; color: inherit; }
   position: absolute;
   top: 0; left: 0; right: 0;
   height: 3px;
-  background: var(--accent, var(--green-500));
+  background: var(--accent, var(--gold));
 }
-.stat-card.green { --accent: var(--green-500); }
-.stat-card.yellow { --accent: var(--yellow-400); }
+.stat-card.green { --accent: var(--gold); }
+.stat-card.yellow { --accent: var(--brown-m); }
 .stat-card.red { --accent: var(--red-400); }
 .stat-card.blue { --accent: #60a5fa; }
 .stat-label { font-size: 11px; font-weight: 600; color: var(--gray-400); text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 6px; }
@@ -267,12 +291,12 @@ a { text-decoration: none; color: inherit; }
   transition: all var(--transition);
   white-space: nowrap;
 }
-.btn-primary { background: var(--green-600); color: white; }
-.btn-primary:hover { background: var(--green-700); transform: translateY(-1px); box-shadow: 0 4px 12px rgba(22,163,74,0.3); }
+.btn-primary { background: var(--gold); color: var(--brown); font-weight: 700; }
+.btn-primary:hover { background: var(--gold-m); transform: translateY(-1px); box-shadow: 0 4px 12px rgba(245,166,35,0.4); }
 .btn-secondary { background: var(--gray-100); color: var(--gray-700); border: 1px solid var(--gray-200); }
 .btn-secondary:hover { background: var(--gray-200); }
-.btn-yellow { background: var(--yellow-400); color: var(--gray-900); }
-.btn-yellow:hover { background: var(--yellow-300); transform: translateY(-1px); }
+.btn-yellow { background: var(--gold); color: var(--brown); }
+.btn-yellow:hover { background: var(--gold-m); transform: translateY(-1px); }
 .btn-danger { background: var(--red-500); color: white; }
 .btn-sm { padding: 6px 12px; font-size: 12px; }
 .btn-icon { padding: 8px; min-width: 36px; justify-content: center; }
@@ -285,16 +309,16 @@ th {
   text-align: left;
   padding: 10px 14px;
   font-size: 11px;
-  font-weight: 700;
-  color: var(--gray-500);
+  font-weight: 600;
+  color: var(--gray);
   text-transform: uppercase;
   letter-spacing: 0.6px;
-  background: var(--gray-50);
-  border-bottom: 1px solid var(--gray-200);
+  background: var(--gray-l);
+  border-bottom: 1px solid var(--border);
 }
-td { padding: 11px 14px; border-bottom: 1px solid var(--gray-100); color: var(--gray-700); vertical-align: middle; }
+td { padding: 11px 14px; border-bottom: 1px solid var(--border); color: var(--brown); vertical-align: middle; }
 tr:last-child td { border-bottom: none; }
-tr:hover td { background: var(--gray-50); }
+tr:hover td { background: var(--gold-l); }
 .td-code { font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--green-700); font-weight: 500; }
 .td-money { font-weight: 600; color: var(--gray-900); font-variant-numeric: tabular-nums; }
 .td-cogs { font-weight: 700; }
@@ -308,9 +332,9 @@ tr:hover td { background: var(--gray-50); }
   font-size: 10px;
   font-weight: 700;
 }
-.badge-green { background: var(--green-100); color: var(--green-700); }
-.badge-yellow { background: #fef9c3; color: #854d0e; }
-.badge-red { background: #fee2e2; color: #b91c1c; }
+.badge-green { background: var(--green-l); color: var(--green); }
+.badge-yellow { background: var(--gold-l); color: var(--brown-m); }
+.badge-red { background: var(--red-l); color: var(--red); }
 .badge-gray { background: var(--gray-100); color: var(--gray-600); }
 
 /* ===== COMPONENT: INPUT ===== */
@@ -319,10 +343,10 @@ tr:hover td { background: var(--gray-50); }
 .form-input {
   width: 100%;
   padding: 9px 12px;
-  border: 1px solid var(--gray-300);
+  border: 1.5px solid var(--border);
   border-radius: 8px;
   font-size: 13px;
-  color: var(--gray-800);
+  color: var(--brown);
   background: var(--white);
   transition: all var(--transition);
 }
@@ -331,11 +355,11 @@ tr:hover td { background: var(--gray-50); }
 .form-textarea { resize: vertical; min-height: 80px; }
 
 /* ===== COMPONENT: ALERT ===== */
-.alert { padding: 12px 16px; border-radius: 8px; font-size: 13px; display: flex; align-items: flex-start; gap: 10px; margin-bottom: 16px; }
-.alert-warning { background: #fffbeb; border: 1px solid #fde68a; color: #92400e; }
-.alert-success { background: #f0fdf4; border: 1px solid #bbf7d0; color: #166534; }
-.alert-error { background: #fef2f2; border: 1px solid #fecaca; color: #991b1b; }
-.alert-info { background: #eff6ff; border: 1px solid #bfdbfe; color: #1e40af; }
+.alert { padding: 11px 14px; border-radius: 8px; font-size: 13px; display: flex; align-items: flex-start; gap: 10px; margin-bottom: 14px; }
+.alert-warning { background: var(--gold-l); border-left: 3px solid var(--gold); color: var(--brown-m); }
+.alert-success { background: var(--green-l); border-left: 3px solid var(--green); color: var(--green); }
+.alert-error { background: var(--red-l); border-left: 3px solid var(--red); color: var(--red); }
+.alert-info { background: var(--blue-l); border-left: 3px solid var(--blue); color: var(--blue); }
 
 /* ===== COMPONENT: LOADER ===== */
 .loader { display: flex; align-items: center; gap: 8px; color: var(--gray-400); font-size: 13px; padding: 20px; justify-content: center; }
@@ -362,7 +386,7 @@ tr:hover td { background: var(--gray-50); }
 
 /* ===== AI RESULT PANEL ===== */
 .ai-panel {
-  background: linear-gradient(135deg, var(--green-900), var(--gray-900));
+  background: linear-gradient(135deg, var(--brown) 0%, var(--brown-m) 100%);
   border-radius: var(--radius);
   padding: 24px;
   color: var(--white);
@@ -384,7 +408,7 @@ tr:hover td { background: var(--gray-50); }
   font-weight: 700;
   letter-spacing: 1.5px;
   text-transform: uppercase;
-  color: var(--green-400);
+  color: var(--gold-m);
   margin-bottom: 8px;
 }
 .ai-section-content { font-size: 14px; line-height: 1.7; color: rgba(255,255,255,0.9); }
@@ -400,7 +424,7 @@ tr:hover td { background: var(--gray-50); }
 .breakdown-bar-fill {
   height: 100%;
   border-radius: 99px;
-  background: linear-gradient(90deg, var(--green-500), var(--green-400));
+  background: linear-gradient(90deg, var(--gold), var(--gold-m));
   transition: width 0.5s ease;
 }
 
@@ -416,7 +440,7 @@ tr:hover td { background: var(--gray-50); }
 /* ===== FORECAST ===== */
 .forecast-card {
   background: var(--white);
-  border: 1px solid var(--gray-200);
+  border: 1.5px solid var(--border);
   border-radius: var(--radius);
   padding: 16px;
   margin-bottom: 8px;
@@ -424,15 +448,15 @@ tr:hover td { background: var(--gray-50); }
 }
 .forecast-rank { font-size: 12px; font-weight: 700; color: var(--gray-400); width: 24px; text-align: center; }
 .forecast-info { flex: 1; }
-.forecast-name { font-size: 13px; font-weight: 600; color: var(--gray-800); }
+.forecast-name { font-size: 13px; font-weight: 600; color: var(--brown); }
 .forecast-unit { font-size: 11px; color: var(--gray-400); }
 .forecast-qty { text-align: right; }
-.forecast-qty-val { font-size: 16px; font-weight: 800; color: var(--gray-900); }
+.forecast-qty-val { font-size: 16px; font-weight: 800; color: var(--brown); }
 .forecast-cost { font-size: 11px; color: var(--gray-400); }
 
 /* ===== STATUS INDICATOR ===== */
 .status-dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; }
-.status-online { background: var(--green-500); animation: pulse 2s infinite; }
+.status-online { background: var(--gold); animation: pulse 2s infinite; }
 .status-offline { background: var(--red-400); }
 @keyframes pulse { 0%,100%{opacity:1;} 50%{opacity:0.5;} }
 
@@ -452,9 +476,9 @@ tr:hover td { background: var(--gray-50); }
 .empty-desc { font-size: 13px; color: var(--gray-400); margin-top: 4px; }
 
 /* ===== TABS ===== */
-.tabs { display: flex; gap: 4px; background: var(--gray-100); border-radius: 10px; padding: 4px; margin-bottom: 20px; }
-.tab-btn { flex: 1; padding: 8px 12px; border-radius: 7px; font-size: 12px; font-weight: 600; color: var(--gray-500); background: transparent; transition: all var(--transition); text-align: center; }
-.tab-btn.active { background: var(--white); color: var(--green-700); box-shadow: var(--shadow-sm); }
+.tabs { display: flex; gap: 4px; background: var(--gray-100); border-radius: 10px; padding: 4px; margin-bottom: 20px; border: 1.5px solid var(--border); }
+.tab-btn { flex: 1; padding: 8px 12px; border-radius: 7px; font-size: 12px; font-weight: 600; color: var(--gray); background: transparent; transition: all var(--transition); text-align: center; }
+.tab-btn.active { background: var(--white); color: var(--brown); box-shadow: var(--shadow-sm); border: 1px solid var(--border); }
 </style>
 </head>
 <body>
@@ -610,11 +634,19 @@ tr:hover td { background: var(--gray-50); }
             </div>
             <div class="card-body">
               <div class="form-group">
-                <label class="form-label">Mã sản phẩm (Product Code)</label>
-                <div class="flex gap-3">
-                  <input type="text" class="form-input" id="costProductCode" placeholder="VD: TSPM, TSTC_L..." style="flex:1">
+                <label class="form-label">Mã hoặc Tên sản phẩm</label>
+                <div class="flex gap-3" style="position:relative">
+                  <div style="flex:1;position:relative">
+                    <input type="text" class="form-input" id="costProductCode" 
+                      placeholder="VD: TSPM — hoặc gõ tên: Trà Sữa Phúc..." 
+                      oninput="searchProductSuggest(this.value)"
+                      onkeydown="if(event.key==='Enter')calculateCostUI()"
+                      autocomplete="off">
+                    <div id="costSuggestBox" style="display:none;position:absolute;top:100%;left:0;right:0;background:white;border:1.5px solid var(--border);border-radius:8px;box-shadow:var(--shadow-md);z-index:200;max-height:240px;overflow-y:auto;margin-top:4px"></div>
+                  </div>
                   <button class="btn btn-primary" onclick="calculateCostUI()">Tính</button>
                 </div>
+                <div class="text-xs text-muted mt-4" style="margin-top:5px">Tìm theo mã (TSPM) hoặc tên sản phẩm</div>
               </div>
 
               <div class="tabs">
@@ -782,12 +814,12 @@ tr:hover td { background: var(--gray-50); }
     <div class="page" id="page-ai">
       <div class="page-header">
         <h1>🤖 AI Analysis</h1>
-        <p>Phân tích chi phí thông minh bằng AI — cập nhật tự động hàng ngày</p>
+        <p>Phân tích chi phí thông minh bằng <strong>Gemini AI</strong> — chạy thủ công hoặc tự động hàng ngày</p>
       </div>
 
       <div class="flex gap-3 mb-6">
         <button class="btn btn-primary" onclick="runAIAnalysisUI()">
-          🤖 Chạy phân tích AI ngay
+          ✨ Chạy phân tích Gemini AI ngay
         </button>
         <button class="btn btn-secondary" onclick="scheduleAI()">
           🕐 Tự động hàng ngày
@@ -819,8 +851,9 @@ tr:hover td { background: var(--gray-50); }
           </div>
           <div class="card-body">
             <div class="form-group">
-              <label class="form-label">Upload file Excel từ IPOS</label>
+              <label class="form-label">Upload file Excel từ IPOS (Fabi/iPOS)</label>
               <input type="file" class="form-input" id="salesFile" accept=".xlsx,.xls,.csv" onchange="handleSalesFile(this)">
+              <div id="salesFileStatus" class="mt-4" style="margin-top:8px"></div>
             </div>
             <div class="form-group">
               <label class="form-label">Hoặc nhập thủ công (JSON)</label>
@@ -885,14 +918,14 @@ tr:hover td { background: var(--gray-50); }
 
         <div class="card settings-card">
           <div class="card-header">
-            <span class="card-icon">🤖</span>
-            <div class="card-title">OpenAI API</div>
+            <span class="card-icon">✨</span>
+            <div class="card-title">Gemini API</div>
           </div>
           <div class="card-body">
             <div class="form-group">
-              <label class="form-label">OpenAI API Key</label>
-              <input type="password" class="form-input" id="settingsOpenAI" placeholder="sk-...">
-              <div class="text-xs text-muted mt-4" style="margin-top:6px">⚠️ Key được lưu trong localStorage, không gửi lên server</div>
+              <label class="form-label">Gemini API Key</label>
+              <input type="password" class="form-input" id="settingsOpenAI" placeholder="AIza...">
+              <div class="text-xs text-muted mt-4" style="margin-top:6px">⚠️ Key được lưu trong localStorage · Lấy tại <a href="https://aistudio.google.com/app/apikey" target="_blank" style="color:var(--gold)">aistudio.google.com</a></div>
             </div>
           </div>
         </div>
@@ -915,7 +948,7 @@ tr:hover td { background: var(--gray-50); }
               <li>Vào Extensions → Apps Script → Dán nội dung file <strong>Code.gs</strong></li>
               <li>Deploy → New deployment → Web App → Anyone → Copy URL</li>
               <li>Dán URL vào ô "Apps Script Web App URL" phía trên</li>
-              <li>Nhập OpenAI API Key để dùng tính năng AI</li>
+              <li>Nhập <strong>Gemini API Key</strong> để dùng AI — lấy miễn phí tại <a href="https://aistudio.google.com/app/apikey" target="_blank" style="color:var(--gold)">aistudio.google.com</a></li>
               <li>Bấm <strong>Lưu cài đặt</strong> và <strong>Kiểm tra kết nối</strong></li>
             </ol>
           </div>
@@ -1069,7 +1102,8 @@ function showPage(pageId) {
 // FORMAT HELPERS
 // ============================================================
 function fmt(n) {
-  return n ? n.toLocaleString('vi-VN') + 'đ' : '—';
+  if (!n && n !== 0) return '—';
+  return Math.round(n).toLocaleString('vi-VN') + 'đ';
 }
 function pct(n) {
   return n ? (n * 100).toFixed(1) + '%' : '—';
@@ -1081,10 +1115,13 @@ function cogsClass(cogs) {
   return 'high';
 }
 function cogsBadge(cogs) {
-  if (!cogs) return '<span class="badge badge-gray">—</span>';
-  const p = (cogs * 100).toFixed(1);
-  if (cogs < 0.28) return `<span class="badge badge-green">${p}%</span>`;
-  if (cogs < 0.35) return `<span class="badge badge-yellow">${p}%</span>`;
+  if (!cogs || cogs <= 0) return '<span class="badge badge-gray">—</span>';
+  // If value > 1, it's already a percentage (e.g. 28.5), else it's decimal (0.285)
+  const pct = cogs > 1 ? cogs : cogs * 100;
+  if (pct > 100) return '<span class="badge badge-gray">—</span>'; // data error
+  const p = pct.toFixed(1);
+  if (pct < 28) return `<span class="badge badge-green">${p}%</span>`;
+  if (pct < 35) return `<span class="badge badge-yellow">${p}%</span>`;
   return `<span class="badge badge-red">${p}%</span>`;
 }
 
@@ -1097,6 +1134,12 @@ async function loadDashboard() {
     if (res.error) { showDashError(res.error); return; }
 
     state.products = res.data || [];
+    // Also pre-load full product list for name search
+    if (!state.allProducts || !state.allProducts.length) {
+      callAppsScript({ action: 'getProducts' }).then(r => {
+        if (r.data) state.products = [...new Map([...state.products, ...r.data].map(p=>[p.code,p])).values()];
+      }).catch(()=>{});
+    }
     const prods = state.products.filter(p => p.cost > 0);
     const avgCost = prods.reduce((s,p) => s + p.cost, 0) / (prods.length || 1);
     const avgCogs = prods.filter(p=>p.cogs>0).reduce((s,p) => s + p.cogs, 0) / (prods.filter(p=>p.cogs>0).length || 1);
@@ -1178,7 +1221,8 @@ function renderProductsTable(products) {
 }
 
 function filterProducts() {
-  const q = document.getElementById('prodSearch').value.toLowerCase();
+  const q = document.getElementById('prodSearch').value.toLowerCase().trim();
+  if (!q) { renderProductsTable(state.products); return; }
   const filtered = state.products.filter(p =>
     (p.name || '').toLowerCase().includes(q) ||
     (p.code || '').toLowerCase().includes(q) ||
@@ -1190,15 +1234,69 @@ function filterProducts() {
 function quickCost(code) {
   showPage('costengine');
   document.getElementById('costProductCode').value = code;
+  document.getElementById('costSuggestBox').style.display = 'none';
   calculateCostUI();
 }
+
+function searchProductSuggest(q) {
+  const box = document.getElementById('costSuggestBox');
+  const val = q.trim().toLowerCase();
+  if (!val || !state.products.length) { box.style.display = 'none'; return; }
+  
+  const matches = state.products.filter(p =>
+    (p.name || '').toLowerCase().includes(val) ||
+    (p.code || '').toLowerCase().includes(val)
+  ).slice(0, 8);
+
+  if (!matches.length) { box.style.display = 'none'; return; }
+
+  box.innerHTML = matches.map(p => `
+    <div onclick="selectProductSuggest('${p.code}','${(p.name||'').replace(/'/g,"\'")}','${p.group||''}')"
+      style="padding:9px 12px;cursor:pointer;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px"
+      onmouseenter="this.style.background='var(--gold-l)'" onmouseleave="this.style.background=''">
+      <div>
+        <div style="font-size:13px;font-weight:600;color:var(--brown)">${p.name || '—'}</div>
+        <div style="font-size:11px;color:var(--brown-m);font-family:monospace">${p.code} · ${p.group || ''}</div>
+      </div>
+      <div style="margin-left:auto;font-size:12px;font-weight:700;color:var(--gold)">${fmt(p.cost)}</div>
+    </div>`).join('');
+  box.style.display = 'block';
+}
+
+function selectProductSuggest(code, name, group) {
+  document.getElementById('costProductCode').value = code;
+  document.getElementById('costSuggestBox').style.display = 'none';
+  calculateCostUI();
+}
+
+// Close suggest box when clicking outside
+document.addEventListener('click', function(e) {
+  const box = document.getElementById('costSuggestBox');
+  if (box && !box.contains(e.target) && e.target.id !== 'costProductCode') {
+    box.style.display = 'none';
+  }
+});
 
 // ============================================================
 // COST ENGINE
 // ============================================================
 async function calculateCostUI() {
-  const code = document.getElementById('costProductCode').value.trim();
+  let code = document.getElementById('costProductCode').value.trim();
   if (!code) return;
+  document.getElementById('costSuggestBox').style.display = 'none';
+
+  // If input looks like a name (not a code pattern), resolve to code
+  if (state.products.length && !/^[A-Z0-9_]+$/.test(code)) {
+    const q = code.toLowerCase();
+    const match = state.products.find(p =>
+      (p.name || '').toLowerCase().includes(q) ||
+      (p.code || '').toLowerCase() === q
+    );
+    if (match) {
+      code = match.code;
+      document.getElementById('costProductCode').value = code;
+    }
+  }
 
   const resultEl = document.getElementById('costResult');
   resultEl.innerHTML = `<div class="card-header"><span class="card-icon">📋</span><div class="card-title">Đang tính...</div></div>
@@ -1240,9 +1338,9 @@ async function calculateCostUI() {
       </div>
       <div class="card-body">
         ${warningsHTML}
-        <div style="background:linear-gradient(135deg,var(--green-900),var(--gray-900));border-radius:10px;padding:16px;color:white;margin-bottom:16px;display:flex;align-items:center;justify-content:space-between">
+        <div style="background:linear-gradient(135deg,var(--brown),var(--brown-m));border-radius:10px;padding:16px;color:white;margin-bottom:16px;display:flex;align-items:center;justify-content:space-between;border:1.5px solid var(--gold)">
           <div>
-            <div style="font-size:11px;color:var(--green-400);font-weight:700;letter-spacing:1px;text-transform:uppercase">TỔNG GIÁ VỐN</div>
+            <div style="font-size:11px;color:var(--gold);font-weight:700;letter-spacing:1px;text-transform:uppercase">TỔNG GIÁ VỐN</div>
             <div style="font-size:28px;font-weight:800;margin-top:4px">${fmt(res.totalCost)}</div>
           </div>
           <div style="font-size:40px">🧮</div>
@@ -1277,37 +1375,37 @@ async function handleImageOCR(input) {
   const file = input.files[0];
   if (!file) return;
   const key = state.settings.openaiKey;
-  if (!key) { document.getElementById('ocrStatus').textContent = '❌ Cần OpenAI API Key trong Cài đặt'; return; }
+  if (!key) { document.getElementById('ocrStatus').innerHTML = '<div class="alert alert-warning">⚠️ Cần Gemini API Key trong Cài đặt</div>'; return; }
 
-  document.getElementById('ocrStatus').innerHTML = '<div class="loader"><div class="spinner"></div> Đang OCR ảnh...</div>';
+  document.getElementById('ocrStatus').innerHTML = '<div class="loader"><div class="spinner"></div> Đang OCR ảnh bằng Gemini...</div>';
 
   const reader = new FileReader();
   reader.onload = async (e) => {
     const base64 = e.target.result.split(',')[1];
+    const mimeType = file.type || 'image/jpeg';
     try {
-      const res = await fetch('https://api.openai.com/v1/chat/completions', {
+      const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${key}`;
+      const res = await fetch(url, {
         method: 'POST',
-        headers: { 'Authorization': 'Bearer ' + key, 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          model: 'gpt-4o-mini',
-          messages: [{
-            role: 'user',
-            content: [
-              { type: 'image_url', image_url: { url: 'data:image/jpeg;base64,' + base64 } },
-              { type: 'text', text: 'Extract the recipe ingredients from this image. Format each line as: "Ingredient Name - Quantity Unit". Return ONLY the ingredient lines, no other text.' }
+          contents: [{
+            parts: [
+              { inline_data: { mime_type: mimeType, data: base64 } },
+              { text: 'Trích xuất danh sách nguyên liệu từ ảnh công thức này. Mỗi dòng theo format: "Tên nguyên liệu - Số lượng Đơn vị". Chỉ trả về danh sách, không có gì khác.' }
             ]
           }],
-          max_tokens: 500
+          generationConfig: { maxOutputTokens: 500 }
         })
       });
       const data = await res.json();
       if (data.error) throw new Error(data.error.message);
-      const text = data.choices[0].message.content;
+      const text = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
       document.getElementById('recipeText').value = text;
-      document.getElementById('ocrStatus').textContent = '✅ OCR thành công! Đã điền vào ô nhập công thức.';
+      document.getElementById('ocrStatus').innerHTML = '<div class="alert alert-success">✅ OCR thành công! Đã điền vào ô nhập công thức.</div>';
       switchInputTab('text', document.querySelectorAll('.tab-btn')[1]);
     } catch(err) {
-      document.getElementById('ocrStatus').textContent = '❌ OCR thất bại: ' + err.message;
+      document.getElementById('ocrStatus').innerHTML = '<div class="alert alert-error">❌ OCR thất bại: ' + err.message + '</div>';
     }
   };
   reader.readAsDataURL(file);
@@ -1383,86 +1481,241 @@ async function saveIngredient() {
 // ============================================================
 // AI ANALYSIS
 // ============================================================
+async function callGemini(prompt) {
+  const key = state.settings.openaiKey; // reusing same localStorage key
+  if (!key) throw new Error('Chưa cấu hình Gemini API Key. Vào Cài đặt để nhập.');
+  const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${key}`;
+  const res = await fetch(url, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      contents: [{ parts: [{ text: prompt }] }],
+      generationConfig: { temperature: 0.7, maxOutputTokens: 1000 }
+    })
+  });
+  if (!res.ok) {
+    const errBody = await res.json().catch(() => ({}));
+    throw new Error(errBody?.error?.message || `HTTP ${res.status}`);
+  }
+  const data = await res.json();
+  return data.candidates?.[0]?.content?.parts?.[0]?.text || '';
+}
+
 async function runAIAnalysisUI() {
   const key = state.settings.openaiKey;
   if (!key) {
     document.getElementById('aiResultPanel').innerHTML =
-      '<div class="alert alert-warning">⚠️ Cần nhập OpenAI API Key trong Cài đặt trước khi chạy AI Analysis</div>';
+      '<div class="alert alert-warning">⚠️ Cần nhập Gemini API Key trong Cài đặt trước khi chạy AI Analysis. Lấy miễn phí tại <a href="https://aistudio.google.com/app/apikey" target="_blank" style="color:var(--gold)">aistudio.google.com</a></div>';
     return;
   }
 
-  document.getElementById('aiStatus').innerHTML = '<div class="spinner"></div> Đang phân tích...';
+  // Load product data if not loaded
+  if (!state.products.length) {
+    document.getElementById('aiStatus').innerHTML = '<div class="spinner"></div> Đang tải dữ liệu sản phẩm...';
+    try {
+      const res = await callAppsScript({ action: 'getAllProductCosts' });
+      if (res.data) state.products = res.data;
+    } catch(e) {}
+  }
+
+  document.getElementById('aiStatus').innerHTML = '<div class="spinner"></div> Gemini đang phân tích...';
   document.getElementById('aiResultPanel').innerHTML = `
     <div class="ai-panel">
-      <div class="loader" style="color:rgba(255,255,255,0.7)"><div class="spinner" style="border-color:rgba(255,255,255,0.2);border-top-color:var(--green-400)"></div> AI đang phân tích dữ liệu chi phí...</div>
+      <div class="loader" style="color:rgba(255,255,255,0.7)">
+        <div class="spinner" style="border-color:rgba(255,255,255,0.2);border-top-color:var(--gold)"></div>
+        ✨ Gemini AI đang phân tích dữ liệu chi phí Phúc Tea...
+      </div>
     </div>`;
 
   try {
-    const res = await callAppsScript({ action: 'runAIAnalysis', openaiKey: key });
+    const prods = state.products.filter(p => p.cost > 0);
+    const avgCogs = prods.filter(p=>p.cogs>0).reduce((s,p)=>s+p.cogs,0) / (prods.filter(p=>p.cogs>0).length||1);
+    const topCost = [...prods].sort((a,b)=>b.cost-a.cost).slice(0,10);
+    const mode = state.mode === 'ĐC' ? 'Đường Chung' : 'Tách Đường';
+
+    const prompt = `Bạn là chuyên gia phân tích chi phí F&B cho Phúc Tea - chuỗi trà sữa Việt Nam.
+Phân tích dữ liệu chi phí sản phẩm sau và trả lời bằng tiếng Việt.
+
+Mode công thức: ${mode}
+Tổng sản phẩm: ${prods.length}
+COGs trung bình: ${(avgCogs*100).toFixed(1)}%
+
+Top 10 sản phẩm giá vốn cao nhất:
+${topCost.map(p=>`- ${p.name} (${p.code}): Giá vốn ${Math.round(p.cost).toLocaleString('vi-VN')}đ, COGs ${p.cogs>1?(p.cogs).toFixed(1):(p.cogs*100).toFixed(1)}%`).join('
+')}
+
+Trả về JSON THUẦN TÚY (không markdown, không backtick):
+{"insight":"Nhận định tình hình chi phí hiện tại (2-3 câu cụ thể)...","recommendation":"Đề xuất cải thiện cụ thể (2-3 câu)...","action":"Hành động ưu tiên cần làm ngay (1-2 câu ngắn gọn)..."}`;
+
+    const raw = await callGemini(prompt);
+    let text = raw.trim().replace(/```json
+?/g,'').replace(/```
+?/g,'').trim();
+    const m = text.match(/\{[\s\S]*\}/);
+    if (m) text = m[0];
+    
+    let analysis;
+    try { analysis = JSON.parse(text); }
+    catch(e) { analysis = { insight: raw, recommendation: '—', action: '—' }; }
+
+    const now = new Date().toLocaleString('vi-VN');
     document.getElementById('aiStatus').innerHTML = '';
-
-    if (res.error) {
-      document.getElementById('aiResultPanel').innerHTML =
-        `<div class="alert alert-error">❌ ${res.error}</div>`;
-      return;
-    }
-
-    const { analysis } = res;
-    state.lastAIRun = res.generatedAt;
-
     document.getElementById('aiResultPanel').innerHTML = `
       <div class="ai-panel">
-        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px">
-          <div style="font-size:18px;font-weight:800;color:white">🤖 AI Phân tích chi phí</div>
-          <div style="font-size:11px;color:var(--green-400)">${new Date(res.generatedAt).toLocaleString('vi-VN')} · ${res.productsAnalyzed} sản phẩm</div>
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:8px">
+          <div style="font-size:17px;font-weight:800;color:white">✨ Gemini AI — Phân tích chi phí</div>
+          <div style="font-size:11px;color:var(--gold-m)">${now} · ${prods.length} sản phẩm · Mode ${mode}</div>
         </div>
         <div class="ai-section">
-          <div class="ai-section-label">💡 Insight — Nhận định</div>
+          <div class="ai-section-label">💡 Nhận định (Insight)</div>
           <div class="ai-section-content">${analysis.insight || '—'}</div>
         </div>
         <div class="ai-section">
-          <div class="ai-section-label">🎯 Recommendation — Đề xuất</div>
+          <div class="ai-section-label">🎯 Đề xuất (Recommendation)</div>
           <div class="ai-section-content">${analysis.recommendation || '—'}</div>
         </div>
         <div class="ai-section">
-          <div class="ai-section-label">⚡ Action — Hành động</div>
+          <div class="ai-section-label">⚡ Hành động ngay (Action)</div>
           <div class="ai-section-content">${analysis.action || '—'}</div>
         </div>
       </div>`;
   } catch(e) {
     document.getElementById('aiStatus').innerHTML = '';
     document.getElementById('aiResultPanel').innerHTML =
-      `<div class="alert alert-error">❌ ${e.message}</div>`;
+      `<div class="alert alert-error">❌ Gemini lỗi: ${e.message}</div>`;
   }
 }
 
 function scheduleAI() {
-  alert('💡 Để chạy AI tự động hàng ngày:\n1. Vào Google Apps Script\n2. Vào Triggers → Add Trigger\n3. Chọn function: runAIAnalysis\n4. Event: Time-driven → Day timer → 8:00 AM');
+  alert('💡 Để chạy AI tự động hàng ngày:\n\nVì Gemini chạy từ trình duyệt, hãy:\n1. Mở trang này vào 8:00 sáng mỗi ngày\n2. Bấm "Chạy phân tích AI ngay"\n\nHoặc tạo Google Apps Script trigger gọi Gemini API với key của bạn.');
 }
 
 // ============================================================
 // FORECAST
 // ============================================================
 let salesData = [];
+let xlsxSalesFile = null;
 
 function handleSalesFile(input) {
   const file = input.files[0];
   if (!file) return;
-  // For XLSX parsing, we use a simple approach
-  alert('📋 File đã được chọn: ' + file.name + '\n\nHệ thống sẽ đọc dữ liệu từ sheet "Tất cả cửa hàng". Nhấn "Tạo dự báo" để tiếp tục.\n\nLưu ý: Cần nhập JSON thủ công theo format mẫu hoặc để Apps Script xử lý file.');
+  xlsxSalesFile = file;
+  
+  if (typeof XLSX === 'undefined') {
+    document.getElementById('salesFileStatus').innerHTML = '<div class="alert alert-error">❌ SheetJS chưa tải. Vui lòng reload trang.</div>';
+    return;
+  }
+  
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    try {
+      const buf = e.target.result;
+      const wb = XLSX.read(buf, { type: 'array', cellDates: false });
+      
+      // Try sheet "Tất cả cửa hàng" first, then first sheet
+      let ws = null;
+      const sheetPriority = ['Tất cả cửa hàng', 'tat ca cua hang'];
+      for (const name of sheetPriority) {
+        if (wb.SheetNames.includes(name)) { ws = wb.Sheets[name]; break; }
+      }
+      if (!ws) ws = wb.Sheets[wb.SheetNames[0]];
+      
+      const rows = XLSX.utils.sheet_to_json(ws, { header: 1, defval: '', raw: true });
+      
+      // IPOS format: rows 0-2 are headers, actual header is row 1 ("Mã món", "Tên món"...)
+      // Find header row
+      let headerRow = -1;
+      let codeCol = -1, nameCol = -1, soldCol = -1, revenueCol = -1;
+      
+      for (let i = 0; i < Math.min(rows.length, 10); i++) {
+        const r = rows[i];
+        for (let j = 0; j < r.length; j++) {
+          const cell = String(r[j] || '').trim();
+          if (cell === 'Mã món' || cell === 'Mã SP') { headerRow = i; codeCol = j; }
+          if (cell === 'Tên món' || cell === 'Tên SP') nameCol = j;
+        }
+        if (headerRow === i) break;
+      }
+      
+      // Find "Đã bán" and revenue in the next header row (IPOS has merged headers)
+      if (headerRow >= 0 && headerRow + 1 < rows.length) {
+        const subHeader = rows[headerRow + 1];
+        for (let j = 0; j < subHeader.length; j++) {
+          const cell = String(subHeader[j] || '').replace(/​/g,'').trim();
+          if (cell === 'Đã bán' && soldCol === -1) soldCol = j;
+          if ((cell === 'Doanh thu (gross)' || cell === 'Doanh thu (net)') && revenueCol === -1) revenueCol = j;
+        }
+      }
+      
+      // Fallback: find sold in same header row
+      if (soldCol === -1 && headerRow >= 0) {
+        const r = rows[headerRow];
+        for (let j = 0; j < r.length; j++) {
+          const cell = String(r[j] || '').replace(/​/g,'').trim();
+          if (cell === 'Đã bán') soldCol = j;
+          if (cell === 'Doanh thu (gross)' || cell === 'Doanh thu (net)') revenueCol = j;
+        }
+      }
+      
+      // Default fallback positions based on IPOS export format
+      if (codeCol === -1) codeCol = 0;
+      if (nameCol === -1) nameCol = 1;
+      if (soldCol === -1) soldCol = 5;
+      if (revenueCol === -1) revenueCol = 11;
+      
+      // Parse data rows (skip group header rows = rows with merged cells / no code)
+      const dataStartRow = headerRow >= 0 ? headerRow + 2 : 3;
+      salesData = [];
+      
+      for (let i = dataStartRow; i < rows.length; i++) {
+        const r = rows[i];
+        const code = String(r[codeCol] || '').replace(/​/g,'').trim();
+        const name = String(r[nameCol] || '').trim();
+        const sold = parseFloat(String(r[soldCol] || '0').replace(/,/g,'')) || 0;
+        const revenue = parseFloat(String(r[revenueCol] || '0').replace(/,/g,'')) || 0;
+        
+        // Skip group rows (no code, or code is same as name - group header)
+        if (!code || code === name || code.startsWith('Báo cáo')) continue;
+        // Skip combo/promo rows
+        if (code.startsWith('COMBO') || code.startsWith('ID_')) continue;
+        if (sold === 0 && revenue === 0) continue;
+        
+        salesData.push({ productCode: code, productName: name, quantitySold: sold, revenue: revenue });
+      }
+      
+      const statusEl = document.getElementById('salesFileStatus');
+      if (salesData.length > 0) {
+        statusEl.innerHTML = `<div class="alert alert-success">✅ Đã đọc <strong>${salesData.length} sản phẩm</strong> từ "${file.name}". Nhấn Tạo dự báo.</div>`;
+      } else {
+        statusEl.innerHTML = `<div class="alert alert-warning">⚠️ Không đọc được dữ liệu từ file. Thử dán JSON thủ công bên dưới.<br><small>Sheets: ${wb.SheetNames.join(', ')}</small></div>`;
+      }
+    } catch(err) {
+      document.getElementById('salesFileStatus').innerHTML = `<div class="alert alert-error">❌ Lỗi đọc file: ${err.message}</div>`;
+    }
+  };
+  reader.readAsArrayBuffer(file);
 }
 
 async function runForecastUI() {
-  let data = salesData;
+  let data = [];
 
-  // Try JSON input first
+  // Priority 1: JSON manual input
   const jsonText = document.getElementById('salesJson').value.trim();
   if (jsonText) {
-    try { data = JSON.parse(jsonText); } catch(e) { alert('❌ JSON không hợp lệ'); return; }
+    try { data = JSON.parse(jsonText); }
+    catch(e) {
+      document.getElementById('forecastResult').innerHTML = '<div class="alert alert-error">❌ JSON không hợp lệ: ' + e.message + '</div>';
+      return;
+    }
+  }
+
+  // Priority 2: Excel file parsed data
+  if (!data.length && salesData.length) {
+    data = salesData;
   }
 
   if (!data || !data.length) {
-    alert('⚠️ Cần nhập dữ liệu bán hàng. Dán JSON vào ô bên trái hoặc upload file Excel.');
+    document.getElementById('forecastResult').innerHTML = '<div class="alert alert-warning">⚠️ Chưa có dữ liệu bán hàng. Vui lòng upload file Excel từ IPOS hoặc dán JSON.</div>';
     return;
   }
 
