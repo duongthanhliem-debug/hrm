@@ -3,1071 +3,1525 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>HRM F&B Chain — Quản lý nhân sự</title>
-<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@300;400;500;600;700&family=Sora:wght@700;800&display=swap" rel="stylesheet">
+<title>Phúc Tea – Data Core System</title>
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
-*{box-sizing:border-box;margin:0;padding:0}
-:root{
-  --green:#16a34a;--green-light:#dcfce7;--green-mid:#22c55e;--green-dark:#14532d;
-  --yellow:#ca8a04;--yellow-light:#fef9c3;
-  --red:#dc2626;--red-light:#fee2e2;
-  --blue:#2563eb;--blue-light:#dbeafe;
-  --bg:#f8fafc;--surface:#ffffff;--border:#e2e8f0;--border2:#cbd5e1;
-  --text:#0f172a;--text2:#475569;--text3:#94a3b8;
-  --shadow:0 1px 3px rgba(0,0,0,.06),0 1px 2px rgba(0,0,0,.04);
-  --shadow-md:0 4px 12px rgba(0,0,0,.08);
-  --r:10px;--r-lg:14px;
-  font-family:'Be Vietnam Pro',system-ui,sans-serif;
+/* ===== DESIGN TOKENS ===== */
+:root {
+  --green-900: #0a2e1a;
+  --green-800: #0f4a2c;
+  --green-700: #166534;
+  --green-600: #16a34a;
+  --green-500: #22c55e;
+  --green-400: #4ade80;
+  --green-100: #dcfce7;
+  --yellow-400: #facc15;
+  --yellow-300: #fde047;
+  --amber-500: #f59e0b;
+  --red-400: #f87171;
+  --red-500: #ef4444;
+  --white: #ffffff;
+  --gray-50: #f8fafc;
+  --gray-100: #f1f5f9;
+  --gray-200: #e2e8f0;
+  --gray-300: #cbd5e1;
+  --gray-400: #94a3b8;
+  --gray-600: #475569;
+  --gray-700: #334155;
+  --gray-800: #1e293b;
+  --gray-900: #0f172a;
+  --sidebar-w: 240px;
+  --header-h: 60px;
+  --radius: 12px;
+  --shadow-sm: 0 1px 3px rgba(0,0,0,0.08);
+  --shadow-md: 0 4px 16px rgba(0,0,0,0.1);
+  --shadow-lg: 0 8px 32px rgba(0,0,0,0.15);
+  --transition: 0.2s cubic-bezier(0.4,0,0.2,1);
 }
-body{background:var(--bg);color:var(--text);min-height:100vh}
-.app{display:flex;height:100vh;overflow:hidden}
 
-/* SIDEBAR */
-.sidebar{width:230px;background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column;flex-shrink:0;transition:width .2s}
-.logo{padding:18px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px}
-.logo-mark{width:36px;height:36px;background:linear-gradient(135deg,#16a34a,#22c55e);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;box-shadow:0 2px 8px rgba(34,197,94,.3)}
-.logo-name{font-family:'Sora',sans-serif;font-size:15px;font-weight:700;color:var(--text)}
-.logo-sub{font-size:10px;color:var(--text3);margin-top:1px}
-nav{flex:1;padding:10px 8px;overflow-y:auto}
-.nav-group{font-size:10px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;padding:12px 10px 4px}
-.nav-item{display:flex;align-items:center;gap:9px;padding:9px 10px;border-radius:var(--r);cursor:pointer;font-size:13px;color:var(--text2);transition:all .15s;margin-bottom:1px;position:relative}
-.nav-item:hover{background:#f1f5f9;color:var(--text)}
-.nav-item.active{background:var(--green-light);color:var(--green)}
-.nav-item.active .nav-icon{filter:none}
-.nav-icon{width:18px;height:18px;display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0}
-.nav-badge{margin-left:auto;background:var(--red-light);color:var(--red);font-size:10px;font-weight:600;padding:1px 6px;border-radius:8px}
-.sidebar-footer{padding:10px 8px;border-top:1px solid var(--border)}
-.user-card{display:flex;align-items:center;gap:9px;padding:8px 10px;border-radius:var(--r);background:var(--bg)}
-.user-av{width:30px;height:30px;border-radius:50%;background:var(--green-light);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600;color:var(--green);flex-shrink:0}
-.user-name{font-size:12px;font-weight:600}
-.user-role{font-size:10px;color:var(--text3)}
-.logout-btn{margin-left:auto;background:none;border:none;cursor:pointer;color:var(--text3);font-size:13px;padding:4px;border-radius:6px}
-.logout-btn:hover{color:var(--red);background:var(--red-light)}
-
-/* MAIN */
-.main{flex:1;display:flex;flex-direction:column;overflow:hidden;min-width:0}
-.topbar{height:52px;background:var(--surface);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;padding:0 22px;flex-shrink:0}
-.topbar-left{display:flex;align-items:center;gap:12px}
-.page-heading{font-family:'Sora',sans-serif;font-size:16px;font-weight:700}
-.topbar-right{display:flex;align-items:center;gap:8px}
-.topbar-btn{padding:7px 12px;border-radius:var(--r);border:1px solid var(--border);background:var(--surface);cursor:pointer;font-size:12px;font-family:inherit;color:var(--text2);transition:all .15s;display:flex;align-items:center;gap:5px}
-.topbar-btn:hover{background:var(--bg);border-color:var(--border2)}
-.notif-dot{width:7px;height:7px;background:var(--red);border-radius:50%;flex-shrink:0}
-.content{flex:1;overflow-y:auto;padding:22px}
-.page{display:none;animation:fadeUp .18s ease-out}
-.page.active{display:block}
-@keyframes fadeUp{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
-
-/* COMPONENTS */
-.stat-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:20px}
-.stat-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-lg);padding:16px;transition:box-shadow .15s}
-.stat-card:hover{box-shadow:var(--shadow-md)}
-.stat-icon-wrap{width:38px;height:38px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px;margin-bottom:10px}
-.stat-label{font-size:11px;color:var(--text3);font-weight:500;text-transform:uppercase;letter-spacing:.04em;margin-bottom:4px}
-.stat-value{font-size:26px;font-weight:700;font-family:'Sora',sans-serif;line-height:1}
-.stat-sub{font-size:11px;color:var(--text3);margin-top:4px}
-.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-lg);overflow:hidden;margin-bottom:16px;box-shadow:var(--shadow)}
-.card-header{padding:13px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
-.card-title{font-size:13px;font-weight:600}
-.card-body{padding:18px}
-.two-col{display:grid;grid-template-columns:3fr 2fr;gap:16px;margin-bottom:16px}
-.three-col{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:16px}
-table{width:100%;border-collapse:collapse;font-size:13px}
-th{padding:10px 14px;text-align:left;font-size:10px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.05em;background:#f8fafc;border-bottom:1px solid var(--border)}
-td{padding:11px 14px;border-bottom:1px solid #f1f5f9;color:var(--text)}
-tr:last-child td{border-bottom:none}
-tbody tr:hover td{background:#fafafa}
-.badge{display:inline-flex;align-items:center;gap:3px;font-size:11px;font-weight:600;padding:3px 9px;border-radius:20px}
-.badge-green{background:var(--green-light);color:#15803d}
-.badge-yellow{background:var(--yellow-light);color:var(--yellow)}
-.badge-red{background:var(--red-light);color:var(--red)}
-.badge-blue{background:var(--blue-light);color:var(--blue)}
-.badge-gray{background:#f1f5f9;color:var(--text2)}
-.btn{display:inline-flex;align-items:center;gap:6px;padding:8px 14px;border-radius:var(--r);font-size:12px;font-weight:600;cursor:pointer;border:1px solid var(--border);background:var(--surface);color:var(--text);transition:all .15s;font-family:inherit}
-.btn:hover{background:var(--bg);border-color:var(--border2)}
-.btn-primary{background:var(--green);color:#fff;border-color:var(--green)}
-.btn-primary:hover{background:#15803d;border-color:#15803d}
-.btn-danger{background:var(--red);color:#fff;border-color:var(--red)}
-.btn-danger:hover{background:#b91c1c}
-.btn-sm{padding:5px 10px;font-size:11px}
-.input,.select{width:100%;padding:8px 11px;border:1px solid var(--border);border-radius:var(--r);font-size:13px;background:var(--surface);color:var(--text);outline:none;font-family:inherit;transition:border .15s}
-.input:focus,.select:focus{border-color:var(--green-mid);box-shadow:0 0 0 3px rgba(34,197,94,.1)}
-.label{font-size:11px;font-weight:600;color:var(--text2);margin-bottom:5px;display:block;text-transform:uppercase;letter-spacing:.03em}
-.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-.form-row{margin-bottom:13px}
-.filter-row{display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap;align-items:flex-end}
-.search-wrap{position:relative;flex:1;min-width:180px}
-.search-wrap input{padding-left:32px}
-.search-icon{position:absolute;left:10px;top:50%;transform:translateY(-50%);color:var(--text3);font-size:14px;pointer-events:none}
-.emp-avatar{width:32px;height:32px;border-radius:50%;background:var(--green-light);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:var(--green);flex-shrink:0}
-.flex{display:flex}.gap-2{gap:8px}.gap-3{gap:12px}.items-center{align-items:center}
-.progress{height:5px;background:#e2e8f0;border-radius:3px;overflow:hidden;min-width:60px}
-.progress-fill{height:100%;background:var(--green-mid);border-radius:3px;transition:width .4s}
-
-/* BAR CHART */
-.chart-wrap{display:flex;align-items:flex-end;gap:4px;height:110px;padding:4px 0}
-.chart-bar{flex:1;border-radius:4px 4px 0 0;transition:opacity .2s;cursor:default;min-width:0}
-.chart-bar:hover{opacity:.8}
-.chart-labels{display:flex;justify-content:space-between;margin-top:5px}
-.chart-label{font-size:10px;color:var(--text3);text-align:center;flex:1}
-
-/* MODAL */
-.modal-backdrop{position:fixed;inset:0;background:rgba(15,23,42,.45);z-index:200;display:flex;align-items:center;justify-content:center;padding:20px;backdrop-filter:blur(2px)}
-.modal{background:var(--surface);border-radius:var(--r-lg);width:100%;max-width:520px;max-height:90vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,.2);animation:fadeUp .18s ease-out}
-.modal-header{padding:16px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;background:var(--surface);z-index:1}
-.modal-title{font-size:14px;font-weight:700}
-.modal-close{background:none;border:none;cursor:pointer;font-size:20px;color:var(--text3);line-height:1;padding:2px 6px;border-radius:6px}
-.modal-close:hover{color:var(--red);background:var(--red-light)}
-.modal-body{padding:20px}
-.modal-footer{padding:14px 20px;border-top:1px solid var(--border);display:flex;justify-content:flex-end;gap:8px;position:sticky;bottom:0;background:var(--surface)}
-
-/* TOAST */
-#toast{position:fixed;bottom:24px;right:24px;z-index:9999;display:flex;flex-direction:column;gap:8px;pointer-events:none}
-.toast-item{background:#0f172a;color:#fff;padding:11px 16px;border-radius:var(--r);font-size:13px;font-weight:500;box-shadow:var(--shadow-md);animation:slideIn .2s ease-out;display:flex;align-items:center;gap:8px}
-@keyframes slideIn{from{opacity:0;transform:translateX(20px)}to{opacity:1;transform:translateX(0)}}
-
-/* SHIFT CALENDAR */
-.shift-grid{display:grid;grid-template-columns:140px repeat(7,1fr);font-size:12px}
-.shift-head{padding:10px 8px;background:#f8fafc;border-bottom:1px solid var(--border);font-size:10px;font-weight:600;color:var(--text3);text-align:center;text-transform:uppercase}
-.shift-head.today{background:var(--green-light);color:var(--green)}
-.shift-emp-col{padding:10px 12px;border-bottom:1px solid #f1f5f9;display:flex;align-items:center;gap:7px;font-size:12px;font-weight:500}
-.shift-cell{padding:4px 5px;border-bottom:1px solid #f1f5f9;border-left:1px solid #f1f5f9;vertical-align:top}
-.shift-pill{border-radius:5px;padding:3px 6px;font-size:10px;font-weight:600;color:#fff;margin-bottom:2px;display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.shift-add{color:var(--border2);font-size:18px;cursor:pointer;display:block;text-align:center;line-height:1.6;border-radius:5px}
-.shift-add:hover{background:var(--bg);color:var(--green)}
-
-/* KPI Radar canvas */
-#kpi-radar{display:block;margin:0 auto}
-
-/* Store cards */
-.store-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
-.store-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-lg);padding:16px;transition:box-shadow .15s}
-.store-card:hover{box-shadow:var(--shadow-md)}
-.store-icon{width:40px;height:40px;background:var(--green-light);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:20px}
-
-/* CHECKIN BANNER */
-.checkin-banner{background:linear-gradient(135deg,#f0fdf4 0%,#dcfce7 100%);border:1px solid #bbf7d0;border-radius:var(--r-lg);padding:16px 20px;margin-bottom:18px;display:flex;align-items:center;justify-content:space-between;flex-wrap:gap}
-.checkin-time{font-family:'Sora',sans-serif;font-size:28px;font-weight:800;color:var(--green);letter-spacing:-1px}
-.checkin-date{font-size:12px;color:var(--text3);margin-top:2px}
-
-/* Scrollbar */
-::-webkit-scrollbar{width:5px;height:5px}
-::-webkit-scrollbar-thumb{background:#cbd5e1;border-radius:10px}
-::-webkit-scrollbar-track{background:transparent}
-
-/* Empty state */
-.empty{text-align:center;padding:40px 20px;color:var(--text3)}
-.empty-icon{font-size:36px;margin-bottom:10px;opacity:.5}
-
-@media(max-width:768px){
-  .sidebar{display:none}
-  .stat-grid{grid-template-columns:1fr 1fr}
-  .two-col,.three-col{grid-template-columns:1fr}
-  .store-grid{grid-template-columns:1fr}
+/* ===== RESET & BASE ===== */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { font-size: 14px; scroll-behavior: smooth; }
+body {
+  font-family: 'Be Vietnam Pro', sans-serif;
+  background: var(--gray-50);
+  color: var(--gray-800);
+  line-height: 1.6;
+  overflow-x: hidden;
 }
+button { cursor: pointer; font-family: inherit; border: none; outline: none; }
+input, textarea, select { font-family: inherit; outline: none; }
+a { text-decoration: none; color: inherit; }
+
+/* ===== LAYOUT ===== */
+.app { display: flex; min-height: 100vh; }
+
+/* ===== SIDEBAR ===== */
+.sidebar {
+  width: var(--sidebar-w);
+  min-height: 100vh;
+  background: var(--green-900);
+  display: flex;
+  flex-direction: column;
+  position: fixed;
+  left: 0; top: 0; bottom: 0;
+  z-index: 100;
+  transition: transform var(--transition);
+}
+
+.sidebar-logo {
+  padding: 20px 18px 16px;
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+}
+.logo-badge {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.logo-icon {
+  width: 36px; height: 36px;
+  background: linear-gradient(135deg, var(--green-500), var(--yellow-400));
+  border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 18px;
+}
+.logo-text { flex: 1; }
+.logo-title { font-size: 13px; font-weight: 800; color: var(--white); letter-spacing: 0.3px; line-height: 1.2; }
+.logo-sub { font-size: 10px; color: var(--green-400); font-weight: 500; letter-spacing: 1px; text-transform: uppercase; }
+
+/* Mode Toggle */
+.mode-toggle {
+  margin: 12px 14px;
+  background: rgba(255,255,255,0.06);
+  border-radius: 10px;
+  padding: 4px;
+  display: flex;
+  gap: 2px;
+}
+.mode-btn {
+  flex: 1;
+  padding: 7px 8px;
+  border-radius: 7px;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--gray-400);
+  background: transparent;
+  transition: all var(--transition);
+  text-align: center;
+}
+.mode-btn.active {
+  background: var(--green-600);
+  color: var(--white);
+  box-shadow: 0 2px 8px rgba(22,163,74,0.4);
+}
+
+/* Nav */
+.sidebar-nav { flex: 1; padding: 8px 10px; overflow-y: auto; }
+.nav-section { margin-bottom: 6px; }
+.nav-label {
+  font-size: 9.5px;
+  font-weight: 700;
+  color: var(--green-400);
+  letter-spacing: 1.2px;
+  text-transform: uppercase;
+  padding: 8px 8px 4px;
+}
+.nav-item {
+  display: flex; align-items: center; gap: 10px;
+  padding: 9px 10px;
+  border-radius: 9px;
+  color: var(--gray-300);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all var(--transition);
+  margin-bottom: 1px;
+}
+.nav-item:hover { background: rgba(255,255,255,0.07); color: var(--white); }
+.nav-item.active {
+  background: linear-gradient(135deg, var(--green-700), var(--green-800));
+  color: var(--white);
+  box-shadow: 0 2px 8px rgba(22,163,74,0.3);
+}
+.nav-item .nav-icon { font-size: 16px; width: 20px; text-align: center; flex-shrink: 0; }
+.nav-badge {
+  margin-left: auto;
+  background: var(--green-600);
+  color: white;
+  font-size: 9px;
+  font-weight: 700;
+  padding: 1px 6px;
+  border-radius: 99px;
+}
+.nav-badge.priority { background: var(--yellow-400); color: var(--gray-900); }
+
+/* Sidebar footer */
+.sidebar-footer { padding: 12px 14px; border-top: 1px solid rgba(255,255,255,0.07); }
+.ext-link-btn {
+  width: 100%;
+  display: flex; align-items: center; gap: 8px;
+  padding: 10px 12px;
+  background: linear-gradient(135deg, var(--yellow-400), var(--amber-500));
+  border-radius: 9px;
+  color: var(--gray-900);
+  font-size: 12px;
+  font-weight: 700;
+  transition: all var(--transition);
+}
+.ext-link-btn:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(245,158,11,0.4); }
+
+/* ===== MAIN CONTENT ===== */
+.main {
+  margin-left: var(--sidebar-w);
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+/* Top Header */
+.topbar {
+  height: var(--header-h);
+  background: var(--white);
+  border-bottom: 1px solid var(--gray-200);
+  display: flex; align-items: center;
+  padding: 0 24px;
+  gap: 16px;
+  position: sticky; top: 0; z-index: 50;
+}
+.topbar-title { font-size: 16px; font-weight: 700; color: var(--gray-800); flex: 1; }
+.topbar-subtitle { font-size: 12px; color: var(--gray-400); font-weight: 400; }
+.topbar-actions { display: flex; gap: 8px; align-items: center; }
+.topbar-mode-badge {
+  padding: 4px 12px;
+  border-radius: 99px;
+  font-size: 11px;
+  font-weight: 700;
+  background: var(--green-100);
+  color: var(--green-700);
+  border: 1px solid var(--green-200);
+}
+
+/* Page Content */
+.page { padding: 24px; display: none; animation: fadeIn 0.25s ease; }
+.page.active { display: block; }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+
+/* ===== COMPONENT: PAGE HEADER ===== */
+.page-header { margin-bottom: 24px; }
+.page-header h1 { font-size: 22px; font-weight: 800; color: var(--gray-900); }
+.page-header p { font-size: 13px; color: var(--gray-500); margin-top: 2px; }
+
+/* ===== COMPONENT: CARDS ===== */
+.card {
+  background: var(--white);
+  border-radius: var(--radius);
+  border: 1px solid var(--gray-200);
+  box-shadow: var(--shadow-sm);
+  overflow: hidden;
+}
+.card-header {
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--gray-100);
+  display: flex; align-items: center; gap: 12px;
+}
+.card-title { font-size: 14px; font-weight: 700; color: var(--gray-800); }
+.card-subtitle { font-size: 12px; color: var(--gray-400); }
+.card-body { padding: 20px; }
+.card-icon { font-size: 18px; }
+
+/* ===== COMPONENT: STAT CARDS ===== */
+.stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-bottom: 24px; }
+.stat-card {
+  background: var(--white);
+  border: 1px solid var(--gray-200);
+  border-radius: var(--radius);
+  padding: 18px 20px;
+  position: relative;
+  overflow: hidden;
+  transition: all var(--transition);
+}
+.stat-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); }
+.stat-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 3px;
+  background: var(--accent, var(--green-500));
+}
+.stat-card.green { --accent: var(--green-500); }
+.stat-card.yellow { --accent: var(--yellow-400); }
+.stat-card.red { --accent: var(--red-400); }
+.stat-card.blue { --accent: #60a5fa; }
+.stat-label { font-size: 11px; font-weight: 600; color: var(--gray-400); text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 6px; }
+.stat-value { font-size: 26px; font-weight: 800; color: var(--gray-900); line-height: 1; }
+.stat-sub { font-size: 11px; color: var(--gray-400); margin-top: 4px; }
+
+/* ===== COMPONENT: BUTTONS ===== */
+.btn {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 9px 16px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  transition: all var(--transition);
+  white-space: nowrap;
+}
+.btn-primary { background: var(--green-600); color: white; }
+.btn-primary:hover { background: var(--green-700); transform: translateY(-1px); box-shadow: 0 4px 12px rgba(22,163,74,0.3); }
+.btn-secondary { background: var(--gray-100); color: var(--gray-700); border: 1px solid var(--gray-200); }
+.btn-secondary:hover { background: var(--gray-200); }
+.btn-yellow { background: var(--yellow-400); color: var(--gray-900); }
+.btn-yellow:hover { background: var(--yellow-300); transform: translateY(-1px); }
+.btn-danger { background: var(--red-500); color: white; }
+.btn-sm { padding: 6px 12px; font-size: 12px; }
+.btn-icon { padding: 8px; min-width: 36px; justify-content: center; }
+.btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none !important; }
+
+/* ===== COMPONENT: TABLE ===== */
+.table-wrap { overflow-x: auto; }
+table { width: 100%; border-collapse: collapse; font-size: 13px; }
+th {
+  text-align: left;
+  padding: 10px 14px;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--gray-500);
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  background: var(--gray-50);
+  border-bottom: 1px solid var(--gray-200);
+}
+td { padding: 11px 14px; border-bottom: 1px solid var(--gray-100); color: var(--gray-700); vertical-align: middle; }
+tr:last-child td { border-bottom: none; }
+tr:hover td { background: var(--gray-50); }
+.td-code { font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--green-700); font-weight: 500; }
+.td-money { font-weight: 600; color: var(--gray-900); font-variant-numeric: tabular-nums; }
+.td-cogs { font-weight: 700; }
+.td-cogs.low { color: var(--green-600); }
+.td-cogs.mid { color: var(--amber-500); }
+.td-cogs.high { color: var(--red-500); }
+.badge {
+  display: inline-flex; align-items: center;
+  padding: 2px 8px;
+  border-radius: 99px;
+  font-size: 10px;
+  font-weight: 700;
+}
+.badge-green { background: var(--green-100); color: var(--green-700); }
+.badge-yellow { background: #fef9c3; color: #854d0e; }
+.badge-red { background: #fee2e2; color: #b91c1c; }
+.badge-gray { background: var(--gray-100); color: var(--gray-600); }
+
+/* ===== COMPONENT: INPUT ===== */
+.form-group { margin-bottom: 16px; }
+.form-label { display: block; font-size: 12px; font-weight: 600; color: var(--gray-600); margin-bottom: 6px; }
+.form-input {
+  width: 100%;
+  padding: 9px 12px;
+  border: 1px solid var(--gray-300);
+  border-radius: 8px;
+  font-size: 13px;
+  color: var(--gray-800);
+  background: var(--white);
+  transition: all var(--transition);
+}
+.form-input:focus { border-color: var(--green-500); box-shadow: 0 0 0 3px rgba(34,197,94,0.1); }
+.form-select { appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M4 6l4 4 4-4' stroke='%2394a3b8' stroke-width='1.5' fill='none'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 10px center; background-size: 16px; padding-right: 32px; }
+.form-textarea { resize: vertical; min-height: 80px; }
+
+/* ===== COMPONENT: ALERT ===== */
+.alert { padding: 12px 16px; border-radius: 8px; font-size: 13px; display: flex; align-items: flex-start; gap: 10px; margin-bottom: 16px; }
+.alert-warning { background: #fffbeb; border: 1px solid #fde68a; color: #92400e; }
+.alert-success { background: #f0fdf4; border: 1px solid #bbf7d0; color: #166534; }
+.alert-error { background: #fef2f2; border: 1px solid #fecaca; color: #991b1b; }
+.alert-info { background: #eff6ff; border: 1px solid #bfdbfe; color: #1e40af; }
+
+/* ===== COMPONENT: LOADER ===== */
+.loader { display: flex; align-items: center; gap: 8px; color: var(--gray-400); font-size: 13px; padding: 20px; justify-content: center; }
+.spinner { width: 20px; height: 20px; border: 2px solid var(--gray-200); border-top-color: var(--green-500); border-radius: 50%; animation: spin 0.7s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ===== GRID HELPERS ===== */
+.grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+.grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+.flex { display: flex; }
+.flex-col { flex-direction: column; }
+.gap-3 { gap: 12px; }
+.gap-4 { gap: 16px; }
+.items-center { align-items: center; }
+.justify-between { justify-content: space-between; }
+.mb-4 { margin-bottom: 16px; }
+.mb-6 { margin-bottom: 24px; }
+.mt-4 { margin-top: 16px; }
+.text-sm { font-size: 12px; }
+.text-xs { font-size: 11px; }
+.text-muted { color: var(--gray-400); }
+.font-mono { font-family: 'JetBrains Mono', monospace; font-size: 11px; }
+.font-bold { font-weight: 700; }
+
+/* ===== AI RESULT PANEL ===== */
+.ai-panel {
+  background: linear-gradient(135deg, var(--green-900), var(--gray-900));
+  border-radius: var(--radius);
+  padding: 24px;
+  color: var(--white);
+  position: relative;
+  overflow: hidden;
+}
+.ai-panel::before {
+  content: '';
+  position: absolute;
+  top: -50%; right: -50%;
+  width: 300px; height: 300px;
+  background: radial-gradient(circle, rgba(34,197,94,0.15) 0%, transparent 70%);
+  pointer-events: none;
+}
+.ai-section { margin-bottom: 20px; }
+.ai-section:last-child { margin-bottom: 0; }
+.ai-section-label {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: var(--green-400);
+  margin-bottom: 8px;
+}
+.ai-section-content { font-size: 14px; line-height: 1.7; color: rgba(255,255,255,0.9); }
+
+/* ===== COST BREAKDOWN ===== */
+.breakdown-bar {
+  background: var(--gray-100);
+  border-radius: 99px;
+  height: 6px;
+  overflow: hidden;
+  margin-top: 4px;
+}
+.breakdown-bar-fill {
+  height: 100%;
+  border-radius: 99px;
+  background: linear-gradient(90deg, var(--green-500), var(--green-400));
+  transition: width 0.5s ease;
+}
+
+/* ===== SEARCH ===== */
+.search-wrap { position: relative; }
+.search-wrap input { padding-left: 36px; }
+.search-icon { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: var(--gray-400); font-size: 14px; pointer-events: none; }
+
+/* ===== SETTINGS ===== */
+.settings-section { max-width: 600px; }
+.settings-card { margin-bottom: 20px; }
+
+/* ===== FORECAST ===== */
+.forecast-card {
+  background: var(--white);
+  border: 1px solid var(--gray-200);
+  border-radius: var(--radius);
+  padding: 16px;
+  margin-bottom: 8px;
+  display: flex; align-items: center; gap: 14px;
+}
+.forecast-rank { font-size: 12px; font-weight: 700; color: var(--gray-400); width: 24px; text-align: center; }
+.forecast-info { flex: 1; }
+.forecast-name { font-size: 13px; font-weight: 600; color: var(--gray-800); }
+.forecast-unit { font-size: 11px; color: var(--gray-400); }
+.forecast-qty { text-align: right; }
+.forecast-qty-val { font-size: 16px; font-weight: 800; color: var(--gray-900); }
+.forecast-cost { font-size: 11px; color: var(--gray-400); }
+
+/* ===== STATUS INDICATOR ===== */
+.status-dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; }
+.status-online { background: var(--green-500); animation: pulse 2s infinite; }
+.status-offline { background: var(--red-400); }
+@keyframes pulse { 0%,100%{opacity:1;} 50%{opacity:0.5;} }
+
+/* ===== RESPONSIVE ===== */
+@media (max-width: 768px) {
+  .sidebar { transform: translateX(-100%); }
+  .sidebar.open { transform: none; }
+  .main { margin-left: 0; }
+  .grid-2, .grid-3 { grid-template-columns: 1fr; }
+  .stats-grid { grid-template-columns: repeat(2, 1fr); }
+}
+
+/* ===== EMPTY STATE ===== */
+.empty-state { text-align: center; padding: 48px 24px; }
+.empty-icon { font-size: 48px; margin-bottom: 16px; opacity: 0.3; }
+.empty-title { font-size: 16px; font-weight: 700; color: var(--gray-600); }
+.empty-desc { font-size: 13px; color: var(--gray-400); margin-top: 4px; }
+
+/* ===== TABS ===== */
+.tabs { display: flex; gap: 4px; background: var(--gray-100); border-radius: 10px; padding: 4px; margin-bottom: 20px; }
+.tab-btn { flex: 1; padding: 8px 12px; border-radius: 7px; font-size: 12px; font-weight: 600; color: var(--gray-500); background: transparent; transition: all var(--transition); text-align: center; }
+.tab-btn.active { background: var(--white); color: var(--green-700); box-shadow: var(--shadow-sm); }
 </style>
 </head>
 <body>
 
 <div class="app">
-  <!-- SIDEBAR -->
-  <aside class="sidebar">
-    <div class="logo">
-      <div class="logo-mark">🧋</div>
-      <div>
-        <div class="logo-name">HRM F&amp;B</div>
-        <div class="logo-sub">Chain Manager</div>
+  <!-- ===== SIDEBAR ===== -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-logo">
+      <div class="logo-badge">
+        <div class="logo-icon">🍵</div>
+        <div class="logo-text">
+          <div class="logo-title">Phúc Tea</div>
+          <div class="logo-sub">Data Core System</div>
+        </div>
       </div>
     </div>
-    <nav id="nav">
-      <div class="nav-group">Menu chính</div>
-      <div class="nav-item active" data-page="dashboard"><span class="nav-icon">📊</span>Tổng quan</div>
-      <div class="nav-item" data-page="employees"><span class="nav-icon">👥</span>Nhân viên</div>
-      <div class="nav-item" data-page="attendance"><span class="nav-icon">⏰</span>Chấm công</div>
-      <div class="nav-item" data-page="shifts"><span class="nav-icon">📅</span>Quản lý ca</div>
-      <div class="nav-item" data-page="payroll"><span class="nav-icon">💰</span>Bảng lương</div>
-      <div class="nav-group">Quản lý</div>
-      <div class="nav-item" data-page="violations"><span class="nav-icon">⚠️</span>Vi phạm <span class="nav-badge" id="viol-count">8</span></div>
-      <div class="nav-item" data-page="kpi"><span class="nav-icon">📈</span>KPI &amp; Đánh giá</div>
-      <div class="nav-item" data-page="stores"><span class="nav-icon">🏪</span>Cửa hàng</div>
-    </nav>
-    <div class="sidebar-footer">
-      <div class="user-card">
-        <div class="user-av" id="user-av">AD</div>
-        <div>
-          <div class="user-name" id="user-name">Admin</div>
-          <div class="user-role" id="user-role">Quản trị viên</div>
+
+    <div class="mode-toggle">
+      <button class="mode-btn active" id="modeBtn_DC" onclick="setMode('ĐC')">⚖️ Đường Chung</button>
+      <button class="mode-btn" id="modeBtn_TD" onclick="setMode('TĐ')">🍯 Tách Đường</button>
+    </div>
+
+    <nav class="sidebar-nav">
+      <div class="nav-section">
+        <div class="nav-label">Tổng quan</div>
+        <div class="nav-item active" onclick="showPage('dashboard')" id="nav-dashboard">
+          <span class="nav-icon">📊</span> Dashboard
         </div>
-        <button class="logout-btn" onclick="logout()" title="Đăng xuất">⎋</button>
       </div>
+      <div class="nav-section">
+        <div class="nav-label">Chi phí</div>
+        <div class="nav-item" onclick="showPage('costengine')" id="nav-costengine">
+          <span class="nav-icon">🧮</span> Cost Engine
+        </div>
+        <div class="nav-item" onclick="showPage('products')" id="nav-products">
+          <span class="nav-icon">🥤</span> Sản phẩm
+        </div>
+        <div class="nav-item" onclick="showPage('ingredients')" id="nav-ingredients">
+          <span class="nav-icon">🧪</span> Nguyên vật liệu
+        </div>
+      </div>
+      <div class="nav-section">
+        <div class="nav-label">Intelligence</div>
+        <div class="nav-item" onclick="showPage('ai')" id="nav-ai">
+          <span class="nav-icon">🤖</span> AI Analysis
+          <span class="nav-badge priority">AI</span>
+        </div>
+        <div class="nav-item" onclick="showPage('forecast')" id="nav-forecast">
+          <span class="nav-icon">📈</span> Forecasting
+          <span class="nav-badge priority">AI</span>
+        </div>
+      </div>
+      <div class="nav-section">
+        <div class="nav-label">Hệ thống</div>
+        <div class="nav-item" onclick="showPage('settings')" id="nav-settings">
+          <span class="nav-icon">⚙️</span> Cài đặt
+        </div>
+      </div>
+    </nav>
+
+    <div class="sidebar-footer">
+      <a href="https://phuctea-pl.vercel.app" target="_blank" class="ext-link-btn">
+        📊 Phúc Tea P&L ↗
+      </a>
     </div>
   </aside>
 
-  <!-- MAIN -->
-  <div class="main">
-    <header class="topbar">
-      <div class="topbar-left">
-        <div class="page-heading" id="page-heading">Tổng quan</div>
-        <span style="font-size:11px;color:var(--text3)" id="topbar-date"></span>
+  <!-- ===== MAIN ===== -->
+  <main class="main">
+    <!-- Topbar -->
+    <div class="topbar">
+      <div class="topbar-title">
+        <span id="topbarTitle">Dashboard</span>
+        <span class="topbar-subtitle"> — Phúc Tea Data Core System</span>
       </div>
-      <div class="topbar-right">
-        <button class="topbar-btn" onclick="showNotifPanel()"><span class="notif-dot"></span>Thông báo (3)</button>
-        <button class="topbar-btn" onclick="showStore()">🏪 <span id="active-store">Tất cả cửa hàng</span></button>
+      <div class="topbar-actions">
+        <span class="topbar-mode-badge" id="topbarMode">⚖️ Đường Chung</span>
+        <span class="status-dot status-offline" id="connStatus" title="Trạng thái kết nối"></span>
       </div>
-    </header>
+    </div>
 
-    <div class="content" id="content">
+    <!-- ===== PAGE: DASHBOARD ===== -->
+    <div class="page active" id="page-dashboard">
+      <div class="page-header">
+        <h1>📊 Dashboard Tổng quan</h1>
+        <p>Số liệu chi phí & vận hành toàn bộ hệ thống Phúc Tea</p>
+      </div>
 
-      <!-- ===================== DASHBOARD ===================== -->
-      <div class="page active" id="page-dashboard">
-        <div class="stat-grid">
-          <div class="stat-card">
-            <div class="stat-icon-wrap" style="background:#dcfce7">👥</div>
-            <div class="stat-label">Nhân viên đang làm</div>
-            <div class="stat-value">47</div>
-            <div class="stat-sub">+3 đang thử việc</div>
+      <div class="stats-grid" id="dashStats">
+        <div class="stat-card green">
+          <div class="stat-label">Tổng sản phẩm</div>
+          <div class="stat-value" id="statTotal">—</div>
+          <div class="stat-sub">Trong mode hiện tại</div>
+        </div>
+        <div class="stat-card yellow">
+          <div class="stat-label">Giá vốn trung bình</div>
+          <div class="stat-value" id="statAvgCost">—</div>
+          <div class="stat-sub">VNĐ / ly</div>
+        </div>
+        <div class="stat-card blue">
+          <div class="stat-label">COGs trung bình</div>
+          <div class="stat-value" id="statAvgCogs">—</div>
+          <div class="stat-sub">% doanh thu</div>
+        </div>
+        <div class="stat-card red">
+          <div class="stat-label">Sản phẩm COGs cao</div>
+          <div class="stat-value" id="statHighCogs">—</div>
+          <div class="stat-sub">Cần theo dõi (&gt;35%)</div>
+        </div>
+      </div>
+
+      <div class="grid-2 mb-6">
+        <div class="card">
+          <div class="card-header">
+            <span class="card-icon">🔥</span>
+            <div>
+              <div class="card-title">Top 10 sản phẩm COGs cao nhất</div>
+              <div class="card-subtitle">Cần kiểm soát chi phí</div>
+            </div>
           </div>
-          <div class="stat-card">
-            <div class="stat-icon-wrap" style="background:#dbeafe">✅</div>
-            <div class="stat-label">Check-in hôm nay</div>
-            <div class="stat-value">32</div>
-            <div class="stat-sub" style="color:var(--red)">⚠ 5 đi trễ</div>
-          </div>
-          <div class="stat-card">
-            <div class="stat-icon-wrap" style="background:#fef9c3">💵</div>
-            <div class="stat-label">Chi phí lương tháng này</div>
-            <div class="stat-value" style="font-size:20px">142.6M</div>
-            <div class="stat-sub">47 nhân viên</div>
-          </div>
-          <div class="stat-card">
-            <div class="stat-icon-wrap" style="background:#fee2e2">⚠️</div>
-            <div class="stat-label">Vi phạm tháng này</div>
-            <div class="stat-value" style="color:var(--red)">8</div>
-            <div class="stat-sub" style="color:var(--red)">Cần xem xét</div>
+          <div class="card-body" id="topCogsTable">
+            <div class="loader"><div class="spinner"></div> Đang tải...</div>
           </div>
         </div>
+        <div class="card">
+          <div class="card-header">
+            <span class="card-icon">💰</span>
+            <div>
+              <div class="card-title">Top 10 giá vốn cao nhất</div>
+              <div class="card-subtitle">Theo VNĐ tuyệt đối</div>
+            </div>
+          </div>
+          <div class="card-body" id="topCostTable">
+            <div class="loader"><div class="spinner"></div> Đang tải...</div>
+          </div>
+        </div>
+      </div>
+    </div>
 
-        <div class="two-col">
-          <div class="card">
+    <!-- ===== PAGE: COST ENGINE ===== -->
+    <div class="page" id="page-costengine">
+      <div class="page-header">
+        <h1>🧮 Cost Engine</h1>
+        <p>Tính giá vốn sản phẩm theo công thức định lượng</p>
+      </div>
+
+      <div class="grid-2">
+        <div>
+          <div class="card mb-4">
             <div class="card-header">
-              <span class="card-title">📉 Chấm công 7 ngày gần nhất</span>
-              <span class="badge badge-gray">Tháng 3/2026</span>
+              <span class="card-icon">🔍</span>
+              <div class="card-title">Tính chi phí theo mã sản phẩm</div>
             </div>
             <div class="card-body">
-              <div class="chart-wrap" id="att-chart"></div>
-              <div class="chart-labels" id="att-labels"></div>
-              <div class="flex gap-3" style="margin-top:10px">
-                <span style="font-size:11px;color:var(--text3)"><span style="color:#22c55e;font-size:14px">■</span> Có mặt</span>
-                <span style="font-size:11px;color:var(--text3)"><span style="color:#fbbf24;font-size:14px">■</span> Đi trễ</span>
-                <span style="font-size:11px;color:var(--text3)"><span style="color:#e2e8f0;font-size:14px">■</span> Vắng</span>
+              <div class="form-group">
+                <label class="form-label">Mã sản phẩm (Product Code)</label>
+                <div class="flex gap-3">
+                  <input type="text" class="form-input" id="costProductCode" placeholder="VD: TSPM, TSTC_L..." style="flex:1">
+                  <button class="btn btn-primary" onclick="calculateCostUI()">Tính</button>
+                </div>
+              </div>
+
+              <div class="tabs">
+                <button class="tab-btn active" onclick="switchInputTab('code', this)">Mã SP</button>
+                <button class="tab-btn" onclick="switchInputTab('text', this)">Nhập tay</button>
+                <button class="tab-btn" onclick="switchInputTab('image', this)">Ảnh OCR</button>
+              </div>
+
+              <div id="tabText" style="display:none">
+                <div class="form-group">
+                  <label class="form-label">Nhập công thức thủ công</label>
+                  <textarea class="form-input form-textarea" id="recipeText" placeholder="Hồng trà nền - 200ml&#10;Trân châu đen - 80g&#10;Đường - 30ml"></textarea>
+                </div>
+                <button class="btn btn-primary" onclick="parseRecipeUI()">Phân tích công thức</button>
+              </div>
+
+              <div id="tabImage" style="display:none">
+                <div class="form-group">
+                  <label class="form-label">Upload ảnh công thức (OCR)</label>
+                  <input type="file" class="form-input" id="recipeImage" accept="image/*" onchange="handleImageOCR(this)">
+                </div>
+                <div id="ocrStatus" class="text-muted text-sm"></div>
               </div>
             </div>
           </div>
-          <div class="card">
+        </div>
+
+        <div>
+          <div class="card" id="costResult">
             <div class="card-header">
-              <span class="card-title">💰 Lương 6 tháng (triệu ₫)</span>
+              <span class="card-icon">📋</span>
+              <div class="card-title">Kết quả tính giá vốn</div>
             </div>
             <div class="card-body">
-              <div class="chart-wrap" id="pay-chart"></div>
-              <div class="chart-labels" id="pay-labels"></div>
-              <div style="font-size:12px;color:var(--text3);margin-top:10px">Xu hướng: <span style="color:var(--green);font-weight:600">↑ +5.4% so với tháng trước</span></div>
+              <div class="empty-state">
+                <div class="empty-icon">🧮</div>
+                <div class="empty-title">Chưa có kết quả</div>
+                <div class="empty-desc">Nhập mã sản phẩm và bấm Tính</div>
+              </div>
             </div>
           </div>
         </div>
-
-        <div class="card">
-          <div class="card-header">
-            <span class="card-title">🏆 Top nhân viên tháng 3/2026</span>
-            <button class="btn btn-sm" onclick="goPage('kpi')">Xem KPI đầy đủ →</button>
-          </div>
-          <table>
-            <thead><tr><th>#</th><th>Nhân viên</th><th>Cửa hàng</th><th>Ca đúng giờ</th><th>Tổng giờ</th><th>Vi phạm</th><th>Điểm chuyên cần</th></tr></thead>
-            <tbody id="top-tbody"></tbody>
-          </table>
-        </div>
       </div>
+    </div>
 
-      <!-- ===================== EMPLOYEES ===================== -->
-      <div class="page" id="page-employees">
-        <div class="filter-row">
-          <div class="search-wrap">
-            <span class="search-icon">🔍</span>
-            <input class="input" placeholder="Tìm tên, SĐT, mã nhân viên..." id="emp-search" oninput="renderEmployees()">
-          </div>
-          <select class="select" style="width:160px" id="emp-status" onchange="renderEmployees()">
-            <option value="">Tất cả trạng thái</option>
-            <option value="active">Đang làm</option>
-            <option value="probation">Thử việc</option>
-            <option value="terminated">Nghỉ việc</option>
-          </select>
-          <select class="select" style="width:160px" id="emp-store" onchange="renderEmployees()">
-            <option value="">Tất cả cửa hàng</option>
-            <option>Quận 1</option><option>Ninh Kiều</option><option>Bình Thạnh</option>
-          </select>
-          <button class="btn btn-primary" onclick="openEmpModal()">＋ Thêm nhân viên</button>
-        </div>
-        <div class="card">
-          <table>
-            <thead><tr><th>Mã NV</th><th>Họ tên</th><th>Liên hệ</th><th>Vị trí</th><th>Cửa hàng</th><th>Ngày vào</th><th>Lương/h</th><th>Trạng thái</th><th></th></tr></thead>
-            <tbody id="emp-tbody"></tbody>
-          </table>
-        </div>
-        <div id="emp-pagination" class="flex gap-2 items-center" style="justify-content:center;margin-top:14px"></div>
+    <!-- ===== PAGE: PRODUCTS ===== -->
+    <div class="page" id="page-products">
+      <div class="page-header">
+        <h1>🥤 Danh sách sản phẩm</h1>
+        <p>Toàn bộ sản phẩm với giá vốn và COGs theo mode hiện tại</p>
       </div>
-
-      <!-- ===================== ATTENDANCE ===================== -->
-      <div class="page" id="page-attendance">
-        <div class="checkin-banner">
+      <div class="card">
+        <div class="card-header flex justify-between items-center">
           <div>
-            <div class="checkin-time" id="live-clock"></div>
-            <div class="checkin-date" id="live-date"></div>
+            <div class="card-title">Sản phẩm — Mode: <span id="prodModeLabel">ĐC</span></div>
+            <div class="card-subtitle" id="prodCount">Đang tải...</div>
           </div>
-          <div class="flex gap-2" style="flex-wrap:wrap">
-            <button class="btn btn-primary" onclick="doCheckIn('GPS')">📍 Check-in GPS</button>
-            <button class="btn btn-primary" onclick="doCheckIn('QR')">📷 Check-in QR</button>
-            <button class="btn" style="background:#0f172a;color:#fff;border-color:#0f172a" onclick="doCheckOut()">🚪 Check-out</button>
+          <div class="flex gap-3">
+            <div class="search-wrap">
+              <span class="search-icon">🔍</span>
+              <input type="text" class="form-input" id="prodSearch" placeholder="Tìm sản phẩm..." oninput="filterProducts()" style="width:200px">
+            </div>
+            <button class="btn btn-secondary btn-sm" onclick="loadProducts()">🔄 Làm mới</button>
           </div>
         </div>
-        <div id="checkin-status"></div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Mã SP</th>
+                <th>Tên sản phẩm</th>
+                <th>Nhóm</th>
+                <th>Quy cách</th>
+                <th style="text-align:right">Giá vốn</th>
+                <th style="text-align:right">Giá bán</th>
+                <th style="text-align:right">COGs%</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody id="productsTableBody">
+              <tr><td colspan="8" class="text-center"><div class="loader"><div class="spinner"></div> Đang tải dữ liệu...</div></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
 
-        <div class="filter-row">
-          <div><label class="label">Từ ngày</label><input type="date" class="input" style="width:145px" id="att-from" value="2026-03-01"></div>
-          <div><label class="label">Đến ngày</label><input type="date" class="input" style="width:145px" id="att-to" value="2026-03-26"></div>
-          <div><label class="label">Cửa hàng</label>
-            <select class="select" style="width:150px" id="att-store-filter">
-              <option value="">Tất cả</option><option>Quận 1</option><option>Ninh Kiều</option><option>Bình Thạnh</option>
-            </select>
+    <!-- ===== PAGE: INGREDIENTS ===== -->
+    <div class="page" id="page-ingredients">
+      <div class="page-header">
+        <h1>🧪 Nguyên vật liệu</h1>
+        <p>Danh sách NVL và giá nhập hiện tại</p>
+      </div>
+      <div class="card">
+        <div class="card-header flex justify-between items-center">
+          <div>
+            <div class="card-title">Danh sách NVL</div>
+            <div class="card-subtitle" id="ingCount">Đang tải...</div>
           </div>
-          <div style="align-self:flex-end"><button class="btn btn-primary" onclick="renderAttendance()">🔍 Lọc</button></div>
+          <div class="flex gap-3">
+            <div class="search-wrap">
+              <span class="search-icon">🔍</span>
+              <input type="text" class="form-input" id="ingSearch" placeholder="Tìm NVL..." oninput="filterIngredients()" style="width:200px">
+            </div>
+            <button class="btn btn-primary btn-sm" onclick="showAddIngredient()">+ Thêm NVL</button>
+          </div>
         </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Mã</th>
+                <th>Tên NVL</th>
+                <th>Nhóm</th>
+                <th>Đơn vị lẻ</th>
+                <th style="text-align:right">Giá lẻ (đ/đvt)</th>
+                <th style="text-align:right">Giá TB</th>
+              </tr>
+            </thead>
+            <tbody id="ingredientsTableBody">
+              <tr><td colspan="6" class="text-center"><div class="loader"><div class="spinner"></div> Đang tải...</div></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Add Ingredient Modal -->
+      <div id="addIngModal" style="display:none" class="card mt-4">
+        <div class="card-header">
+          <span class="card-icon">➕</span>
+          <div class="card-title">Thêm nguyên vật liệu mới</div>
+        </div>
+        <div class="card-body">
+          <div class="grid-2">
+            <div class="form-group">
+              <label class="form-label">Mã hàng</label>
+              <input type="text" class="form-input" id="newIngCode" placeholder="NVL0101xx">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Tên NVL</label>
+              <input type="text" class="form-input" id="newIngName" placeholder="Tên nguyên liệu">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Nhóm</label>
+              <input type="text" class="form-input" id="newIngGroup" placeholder="Nguyên vật liệu">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Đơn vị lẻ</label>
+              <input type="text" class="form-input" id="newIngUnit" placeholder="gram / ml / cái...">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Giá nhập lẻ (đ/đvt)</label>
+              <input type="number" class="form-input" id="newIngPrice" placeholder="0">
+            </div>
+          </div>
+          <div class="flex gap-3">
+            <button class="btn btn-primary" onclick="saveIngredient()">💾 Lưu NVL</button>
+            <button class="btn btn-secondary" onclick="document.getElementById('addIngModal').style.display='none'">Huỷ</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== PAGE: AI ANALYSIS ===== -->
+    <div class="page" id="page-ai">
+      <div class="page-header">
+        <h1>🤖 AI Analysis</h1>
+        <p>Phân tích chi phí thông minh bằng AI — cập nhật tự động hàng ngày</p>
+      </div>
+
+      <div class="flex gap-3 mb-6">
+        <button class="btn btn-primary" onclick="runAIAnalysisUI()">
+          🤖 Chạy phân tích AI ngay
+        </button>
+        <button class="btn btn-secondary" onclick="scheduleAI()">
+          🕐 Tự động hàng ngày
+        </button>
+        <div id="aiStatus" class="flex items-center gap-3 text-sm text-muted"></div>
+      </div>
+
+      <div id="aiResultPanel">
+        <div class="empty-state">
+          <div class="empty-icon">🤖</div>
+          <div class="empty-title">Chưa có phân tích</div>
+          <div class="empty-desc">Bấm "Chạy phân tích AI ngay" để bắt đầu. Cần cấu hình OpenAI API Key trong Cài đặt.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== PAGE: FORECAST ===== -->
+    <div class="page" id="page-forecast">
+      <div class="page-header">
+        <h1>📈 Forecasting</h1>
+        <p>Dự báo nhu cầu nguyên vật liệu dựa trên dữ liệu bán hàng</p>
+      </div>
+
+      <div class="grid-2 mb-6">
         <div class="card">
           <div class="card-header">
-            <span class="card-title">Lịch sử chấm công</span>
-            <span class="badge badge-blue" id="att-count">— bản ghi</span>
+            <span class="card-icon">📂</span>
+            <div class="card-title">Import dữ liệu bán hàng (IPOS)</div>
           </div>
-          <table>
-            <thead><tr><th>Ngày</th><th>Nhân viên</th><th>Cửa hàng</th><th>Check-in</th><th>Check-out</th><th>Giờ làm</th><th>OT</th><th>Đi trễ</th><th>Trạng thái</th></tr></thead>
-            <tbody id="att-tbody"></tbody>
-          </table>
-        </div>
-      </div>
-
-      <!-- ===================== SHIFTS ===================== -->
-      <div class="page" id="page-shifts">
-        <div class="filter-row" style="justify-content:space-between">
-          <div class="flex gap-2 items-center">
-            <button class="btn" onclick="weekOffset--;renderShifts()">‹ Tuần trước</button>
-            <span style="font-size:13px;font-weight:600;min-width:200px;text-align:center" id="week-label"></span>
-            <button class="btn" onclick="weekOffset++;renderShifts()">Tuần sau ›</button>
-          </div>
-          <div class="flex gap-2">
-            <select class="select" style="width:160px" id="shift-store-filter" onchange="renderShifts()">
-              <option value="">Tất cả cửa hàng</option><option>Quận 1</option><option>Ninh Kiều</option><option>Bình Thạnh</option>
-            </select>
-            <button class="btn btn-primary" onclick="openShiftModal()">＋ Thêm ca</button>
-          </div>
-        </div>
-        <div class="card" id="shift-card" style="overflow-x:auto"></div>
-      </div>
-
-      <!-- ===================== PAYROLL ===================== -->
-      <div class="page" id="page-payroll">
-        <div class="card" style="margin-bottom:16px">
-          <div class="card-header"><span class="card-title">🧮 Tính lương tự động</span></div>
           <div class="card-body">
-            <div class="filter-row" style="margin:0;align-items:flex-end">
-              <div><label class="label">Cửa hàng</label>
-                <select class="select" style="width:180px" id="pay-store">
-                  <option value="">Chọn cửa hàng...</option><option>Quận 1</option><option>Ninh Kiều</option><option>Bình Thạnh</option>
-                </select>
-              </div>
-              <div><label class="label">Tháng</label>
-                <select class="select" style="width:110px" id="pay-month">
-                  <option value="3">Tháng 3</option><option value="2">Tháng 2</option><option value="1">Tháng 1</option>
-                </select>
-              </div>
-              <div><label class="label">Năm</label><input class="input" style="width:80px" value="2026" id="pay-year"></div>
-              <button class="btn btn-primary" onclick="calcPayroll()">🧮 Tính lương</button>
-              <button class="btn" onclick="exportPayroll()">📥 Xuất Excel</button>
-              <button class="btn" style="background:#7c3aed;color:#fff;border-color:#7c3aed" onclick="approvePayroll()">✓ Phê duyệt</button>
+            <div class="form-group">
+              <label class="form-label">Upload file Excel từ IPOS</label>
+              <input type="file" class="form-input" id="salesFile" accept=".xlsx,.xls,.csv" onchange="handleSalesFile(this)">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Hoặc nhập thủ công (JSON)</label>
+              <textarea class="form-input form-textarea" id="salesJson" placeholder='[{"productCode":"TSPM","productName":"Trà Sữa Phúc M","quantitySold":50,"revenue":1450000}]'></textarea>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Số ngày dự báo</label>
+              <select class="form-input form-select" id="forecastDays">
+                <option value="7">7 ngày</option>
+                <option value="14">14 ngày</option>
+                <option value="30">30 ngày</option>
+              </select>
+            </div>
+            <button class="btn btn-primary" onclick="runForecastUI()">📈 Tạo dự báo</button>
+          </div>
+        </div>
+
+        <div class="card" id="forecastSummary">
+          <div class="card-header">
+            <span class="card-icon">📊</span>
+            <div class="card-title">Tổng quan dự báo</div>
+          </div>
+          <div class="card-body">
+            <div class="empty-state">
+              <div class="empty-icon">📈</div>
+              <div class="empty-title">Chưa có dự báo</div>
+              <div class="empty-desc">Upload dữ liệu bán hàng để bắt đầu</div>
             </div>
           </div>
         </div>
-        <div id="pay-summary-wrap" style="display:none">
-          <div class="three-col" id="pay-summary"></div>
-          <div class="card">
-            <div class="card-header">
-              <span class="card-title" id="pay-title">Bảng lương</span>
-              <span class="badge badge-yellow" id="pay-status-badge">Bản nháp</span>
+      </div>
+
+      <div id="forecastResult"></div>
+    </div>
+
+    <!-- ===== PAGE: SETTINGS ===== -->
+    <div class="page" id="page-settings">
+      <div class="page-header">
+        <h1>⚙️ Cài đặt hệ thống</h1>
+        <p>Cấu hình kết nối Google Sheets, Apps Script và OpenAI</p>
+      </div>
+
+      <div class="settings-section">
+        <div class="card settings-card">
+          <div class="card-header">
+            <span class="card-icon">🔌</span>
+            <div class="card-title">Kết nối Apps Script</div>
+          </div>
+          <div class="card-body">
+            <div class="form-group">
+              <label class="form-label">Apps Script Web App URL</label>
+              <input type="url" class="form-input" id="settingsAppsUrl" placeholder="https://script.google.com/macros/s/.../exec">
             </div>
-            <table>
-              <thead><tr><th>Nhân viên</th><th>Vị trí</th><th>Ngày công</th><th>Tổng giờ</th><th>OT (h)</th><th>Lương cơ bản</th><th>Lương giờ</th><th>OT pay</th><th>Trừ phạt</th><th>Gross</th><th style="color:var(--green)">Thực nhận</th></tr></thead>
-              <tbody id="pay-tbody"></tbody>
-            </table>
+            <div class="form-group">
+              <label class="form-label">Google Sheet ID</label>
+              <input type="text" class="form-input" id="settingsSheetId" placeholder="12h9gNsH7txvEue8KGGji3gMZ-M5AykTPzCa-KZVgegg">
+            </div>
+            <button class="btn btn-primary" onclick="testConnection()">🔗 Kiểm tra kết nối</button>
+            <div id="connTestResult" class="mt-4"></div>
           </div>
         </div>
-        <div class="empty" id="pay-empty">
-          <div class="empty-icon">💰</div>
-          <div>Chọn cửa hàng và tháng, nhấn <strong>Tính lương</strong> để xem bảng lương</div>
-        </div>
-      </div>
 
-      <!-- ===================== VIOLATIONS ===================== -->
-      <div class="page" id="page-violations">
-        <div class="filter-row">
-          <select class="select" style="width:140px" id="viol-month-filter">
-            <option value="3">Tháng 3/2026</option><option value="2">Tháng 2/2026</option>
-          </select>
-          <select class="select" style="width:160px" id="viol-store-filter" onchange="renderViolations()">
-            <option value="">Tất cả cửa hàng</option><option>Quận 1</option><option>Ninh Kiều</option><option>Bình Thạnh</option>
-          </select>
-          <select class="select" style="width:140px" id="viol-sev-filter" onchange="renderViolations()">
-            <option value="">Tất cả mức độ</option><option value="warning">Cảnh báo</option><option value="minor">Nhẹ</option><option value="major">Nghiêm trọng</option>
-          </select>
-          <button class="btn btn-danger" onclick="openViolModal()">⚠ Ghi nhận vi phạm</button>
-        </div>
-        <div class="three-col">
-          <div class="stat-card"><div class="stat-label">Tổng vi phạm tháng 3</div><div class="stat-value" style="color:var(--red)">8</div></div>
-          <div class="stat-card"><div class="stat-label">Tổng tiền phạt</div><div class="stat-value" style="font-size:18px;color:var(--red)">380.000 ₫</div></div>
-          <div class="stat-card"><div class="stat-label">NV vi phạm nhiều nhất</div><div class="stat-value" style="font-size:16px">Trần V. Hùng</div><div class="stat-sub" style="color:var(--red)">3 lần — cảnh cáo</div></div>
-        </div>
-        <div class="card">
-          <table>
-            <thead><tr><th>Ngày</th><th>Nhân viên</th><th>Cửa hàng</th><th>Loại vi phạm</th><th>Mức độ</th><th>Tiền phạt</th><th>Mô tả</th><th>Ghi nhận bởi</th></tr></thead>
-            <tbody id="viol-tbody"></tbody>
-          </table>
-        </div>
-      </div>
-
-      <!-- ===================== KPI ===================== -->
-      <div class="page" id="page-kpi">
-        <div class="filter-row">
-          <select class="select" style="width:200px" id="kpi-emp-filter" onchange="renderKpi()">
-            <option value="">Tất cả nhân viên</option>
-          </select>
-          <select class="select" style="width:140px">
-            <option>Tháng 3/2026</option><option>Tháng 2/2026</option>
-          </select>
-          <select class="select" style="width:160px">
-            <option>Tất cả cửa hàng</option><option>Quận 1</option><option>Ninh Kiều</option><option>Bình Thạnh</option>
-          </select>
-        </div>
-        <div class="two-col">
-          <div class="card">
-            <div class="card-header"><span class="card-title">📊 Biểu đồ Radar KPI</span></div>
-            <div class="card-body" style="display:flex;justify-content:center;align-items:center;padding:10px">
-              <canvas id="kpi-radar" width="260" height="240"></canvas>
+        <div class="card settings-card">
+          <div class="card-header">
+            <span class="card-icon">🤖</span>
+            <div class="card-title">OpenAI API</div>
+          </div>
+          <div class="card-body">
+            <div class="form-group">
+              <label class="form-label">OpenAI API Key</label>
+              <input type="password" class="form-input" id="settingsOpenAI" placeholder="sk-...">
+              <div class="text-xs text-muted mt-4" style="margin-top:6px">⚠️ Key được lưu trong localStorage, không gửi lên server</div>
             </div>
           </div>
-          <div class="card">
-            <div class="card-header"><span class="card-title">📋 Bảng điểm KPI tháng 3</span></div>
-            <table>
-              <thead><tr><th>Nhân viên</th><th>Tiêu chí</th><th>Thực tế</th><th>Mục tiêu</th><th>Điểm</th></tr></thead>
-              <tbody id="kpi-tbody"></tbody>
-            </table>
+        </div>
+
+        <div class="flex gap-3">
+          <button class="btn btn-primary" onclick="saveSettings()">💾 Lưu cài đặt</button>
+          <button class="btn btn-secondary" onclick="loadSettings()">↩️ Khôi phục</button>
+        </div>
+
+        <div id="settingsSaved" class="mt-4"></div>
+
+        <div class="card settings-card mt-4">
+          <div class="card-header">
+            <span class="card-icon">📋</span>
+            <div class="card-title">Hướng dẫn cài đặt nhanh</div>
+          </div>
+          <div class="card-body">
+            <ol style="padding-left:18px;line-height:2;font-size:13px;color:var(--gray-600)">
+              <li>Mở Google Sheet: <a href="https://docs.google.com/spreadsheets/d/12h9gNsH7txvEue8KGGji3gMZ-M5AykTPzCa-KZVgegg" target="_blank" style="color:var(--green-600)">Click vào đây</a></li>
+              <li>Vào Extensions → Apps Script → Dán nội dung file <strong>Code.gs</strong></li>
+              <li>Deploy → New deployment → Web App → Anyone → Copy URL</li>
+              <li>Dán URL vào ô "Apps Script Web App URL" phía trên</li>
+              <li>Nhập OpenAI API Key để dùng tính năng AI</li>
+              <li>Bấm <strong>Lưu cài đặt</strong> và <strong>Kiểm tra kết nối</strong></li>
+            </ol>
           </div>
         </div>
       </div>
+    </div>
 
-      <!-- ===================== STORES ===================== -->
-      <div class="page" id="page-stores">
-        <div style="display:flex;justify-content:space-between;margin-bottom:16px;align-items:center">
-          <span style="font-size:13px;color:var(--text2)">Quản lý <strong>4 cửa hàng</strong> trong hệ thống</span>
-          <button class="btn btn-primary" onclick="openStoreModal()">＋ Thêm cửa hàng</button>
-        </div>
-        <div class="store-grid" id="store-grid"></div>
-      </div>
+  </main>
+</div>
 
-    </div><!-- /content -->
-  </div><!-- /main -->
-</div><!-- /app -->
-
-<div id="toast"></div>
-<div id="modal-root"></div>
-
+<!-- ===== SCRIPTS ===== -->
 <script>
-// ─── DATA ─────────────────────────────────────────────────────────────────────
-const EMPLOYEES = [
-  {id:1,code:'NV00001',name:'Nguyễn Thị Lan',phone:'0901 234 567',email:'lan.nguyen@demo.vn',position:'Trưởng ca',store:'Quận 1',hire:'2023-05-01',status:'active',salary:9000000,hourly:0,hours:176},
-  {id:2,code:'NV00002',name:'Trần Văn Hùng',phone:'0912 345 678',email:'hung.tran@demo.vn',position:'Nhân viên',store:'Ninh Kiều',hire:'2024-01-15',status:'active',salary:0,hourly:35000,hours:152},
-  {id:3,code:'NV00003',name:'Lê Minh Châu',phone:'0923 456 789',email:'chau.le@demo.vn',position:'Nhân viên',store:'Quận 1',hire:'2024-03-01',status:'probation',salary:0,hourly:30000,hours:144},
-  {id:4,code:'NV00004',name:'Phạm Thu Hà',phone:'0934 567 890',email:'ha.pham@demo.vn',position:'Quản lý',store:'Bình Thạnh',hire:'2022-11-20',status:'active',salary:16000000,hourly:0,hours:176},
-  {id:5,code:'NV00005',name:'Đỗ Quốc Bảo',phone:'0945 678 901',email:'bao.do@demo.vn',position:'Nhân viên',store:'Ninh Kiều',hire:'2024-06-01',status:'active',salary:0,hourly:32000,hours:160},
-  {id:6,code:'NV00006',name:'Võ Thanh Thảo',phone:'0956 789 012',email:'thao.vo@demo.vn',position:'Trưởng ca',store:'Bình Thạnh',hire:'2023-08-15',status:'active',salary:9500000,hourly:0,hours:168},
-  {id:7,code:'NV00007',name:'Bùi Văn Nam',phone:'0967 890 123',email:'nam.bui@demo.vn',position:'Nhân viên',store:'Quận 1',hire:'2025-01-10',status:'terminated',salary:0,hourly:28000,hours:0},
-  {id:8,code:'NV00008',name:'Huỳnh Thị Mai',phone:'0978 901 234',email:'mai.huynh@demo.vn',position:'Nhân viên',store:'Bình Thạnh',hire:'2025-03-01',status:'probation',salary:0,hourly:30000,hours:88},
-];
-
-const ATTENDANCE = [
-  {date:'2026-03-26',emp:'Nguyễn Thị Lan',store:'Quận 1',in:'07:58',out:'16:05',hours:8.1,ot:0,late:0,status:'present'},
-  {date:'2026-03-26',emp:'Trần Văn Hùng',store:'Ninh Kiều',in:'08:12',out:'16:00',hours:7.8,ot:0,late:12,status:'late'},
-  {date:'2026-03-26',emp:'Lê Minh Châu',store:'Quận 1',in:'08:00',out:null,hours:null,ot:0,late:0,status:'present'},
-  {date:'2026-03-25',emp:'Phạm Thu Hà',store:'Bình Thạnh',in:'07:55',out:'17:10',hours:9.2,ot:1.2,late:0,status:'present'},
-  {date:'2026-03-25',emp:'Đỗ Quốc Bảo',store:'Ninh Kiều',in:'13:15',out:'21:00',hours:7.75,ot:0,late:15,status:'late'},
-  {date:'2026-03-25',emp:'Võ Thanh Thảo',store:'Bình Thạnh',in:'08:01',out:'16:02',hours:8.0,ot:0,late:0,status:'present'},
-  {date:'2026-03-24',emp:'Nguyễn Thị Lan',store:'Quận 1',in:'07:59',out:'16:10',hours:8.2,ot:0.2,late:0,status:'present'},
-  {date:'2026-03-24',emp:'Huỳnh Thị Mai',store:'Bình Thạnh',in:'08:00',out:'16:00',hours:8.0,ot:0,late:0,status:'present'},
-  {date:'2026-03-24',emp:'Đỗ Quốc Bảo',store:'Ninh Kiều',in:null,out:null,hours:0,ot:0,late:0,status:'absent'},
-];
-
-const VIOLATIONS = [
-  {date:'2026-03-25',emp:'Trần Văn Hùng',store:'Ninh Kiều',type:'Đi trễ ca sáng',severity:'warning',penalty:20000,desc:'Đến trễ 12 phút',by:'Quản lý'},
-  {date:'2026-03-24',emp:'Đỗ Quốc Bảo',store:'Ninh Kiều',type:'Vắng mặt không báo',severity:'critical',penalty:200000,desc:'Không đến làm, không liên lạc',by:'Quản lý'},
-  {date:'2026-03-20',emp:'Lê Minh Châu',store:'Quận 1',type:'Không mặc đồng phục',severity:'minor',penalty:50000,desc:'Quên mang áo đồng phục',by:'Trưởng ca'},
-  {date:'2026-03-18',emp:'Bùi Văn Nam',store:'Quận 1',type:'Thái độ phục vụ kém',severity:'major',penalty:100000,desc:'Khách phản ánh thái độ',by:'Quản lý'},
-  {date:'2026-03-15',emp:'Trần Văn Hùng',store:'Ninh Kiều',type:'Đi trễ ca sáng',severity:'warning',penalty:20000,desc:'Trễ 8 phút',by:'Trưởng ca'},
-  {date:'2026-03-12',emp:'Trần Văn Hùng',store:'Ninh Kiều',type:'Đi trễ ca chiều',severity:'warning',penalty:20000,desc:'Trễ 10 phút',by:'Quản lý'},
-  {date:'2026-03-10',emp:'Huỳnh Thị Mai',store:'Bình Thạnh',type:'Không mặc đồng phục',severity:'minor',penalty:50000,desc:'Không mặc đúng quy định',by:'Quản lý'},
-  {date:'2026-03-05',emp:'Đỗ Quốc Bảo',store:'Ninh Kiều',type:'Đi trễ ca sáng',severity:'warning',penalty:20000,desc:'Trễ 6 phút',by:'Trưởng ca'},
-];
-
-const STORES = [
-  {name:'TraSua Quận 1',code:'TS-HCM-Q1',address:'123 Nguyễn Huệ, Q.1, TP.HCM',region:'Hồ Chí Minh',lat:10.7731,lng:106.7031,active:true,staff:15,manager:'Nguyễn Thị Lan'},
-  {name:'TraSua Ninh Kiều',code:'TS-CT-NK',address:'45 Hai Bà Trưng, Ninh Kiều, Cần Thơ',region:'Đồng bằng SCL',lat:10.0302,lng:105.7469,active:true,staff:12,manager:'Trần Văn Hùng'},
-  {name:'TraSua Bình Thạnh',code:'TS-HCM-BT',address:'78 Đinh Bộ Lĩnh, Bình Thạnh, TP.HCM',region:'Hồ Chí Minh',lat:10.8116,lng:106.7090,active:true,staff:13,manager:'Phạm Thu Hà'},
-  {name:'TraSua Gò Vấp',code:'TS-HCM-GV',address:'201 Quang Trung, Gò Vấp, TP.HCM',region:'Hồ Chí Minh',lat:10.8380,lng:106.6722,active:false,staff:0,manager:'—'},
-];
-
-// ─── STATE ────────────────────────────────────────────────────────────────────
-let weekOffset = 0;
-let empPage = 1;
-const PAGE_TITLES = {dashboard:'Tổng quan',employees:'Quản lý nhân viên',attendance:'Chấm công',shifts:'Quản lý ca làm',payroll:'Bảng lương',violations:'Vi phạm',kpi:'KPI & Đánh giá',stores:'Chuỗi cửa hàng'};
-
-// ─── CLOCK ────────────────────────────────────────────────────────────────────
-function updateClock(){
-  const now = new Date();
-  const el = document.getElementById('live-clock');
-  if(el) el.textContent = now.toLocaleTimeString('vi-VN',{hour:'2-digit',minute:'2-digit',second:'2-digit'});
-  const de = document.getElementById('live-date');
-  if(de) de.textContent = now.toLocaleDateString('vi-VN',{weekday:'long',day:'2-digit',month:'2-digit',year:'numeric'});
-}
-setInterval(updateClock,1000); updateClock();
-document.getElementById('topbar-date').textContent = new Date('2026-03-26').toLocaleDateString('vi-VN',{weekday:'long',day:'2-digit',month:'2-digit',year:'numeric'});
-
-// ─── NAVIGATION ───────────────────────────────────────────────────────────────
-document.getElementById('nav').addEventListener('click', e => {
-  const item = e.target.closest('.nav-item');
-  if(!item || !item.dataset.page) return;
-  goPage(item.dataset.page);
-});
-
-function goPage(page){
-  document.querySelectorAll('.nav-item').forEach(i=>i.classList.toggle('active', i.dataset.page===page));
-  document.querySelectorAll('.page').forEach(p=>p.classList.toggle('active', p.id==='page-'+page));
-  document.getElementById('page-heading').textContent = PAGE_TITLES[page]||page;
-  if(page==='shifts') renderShifts();
-  if(page==='kpi'){renderKpi();setTimeout(drawRadar,100);}
-  if(page==='stores') renderStores();
-  if(page==='employees') renderEmployees();
-  if(page==='attendance') renderAttendance();
-  if(page==='violations') renderViolations();
-}
-
-// ─── FORMAT HELPERS ───────────────────────────────────────────────────────────
-const fmtVND = n => new Intl.NumberFormat('vi-VN').format(Math.round(n||0));
-const fmtM = n => (n/1000000).toFixed(1)+'M';
-
-// ─── DASHBOARD ────────────────────────────────────────────────────────────────
-(function initDashboard(){
-  // Attendance chart
-  const attVals = [32,28,35,30,27,33,32];
-  const lateVals = [3,1,5,2,4,2,5];
-  const days = ['T2','T3','T4','T5','T6','T7','CN'];
-  const max = Math.max(...attVals);
-  document.getElementById('att-chart').innerHTML = attVals.map((v,i)=>`
-    <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:2px">
-      <div class="chart-bar" style="height:${Math.round(v/max*90)}px;background:${i===6?'#22c55e':'#86efac'};width:100%" title="${v} có mặt, ${lateVals[i]} trễ"></div>
-      <div class="chart-bar" style="height:${Math.round(lateVals[i]/max*90)}px;background:#fbbf24;width:100%;margin-top:2px" title="${lateVals[i]} trễ"></div>
-    </div>`).join('');
-  document.getElementById('att-labels').innerHTML = days.map(d=>`<span class="chart-label">${d}</span>`).join('');
-
-  // Payroll chart
-  const payVals = [128,132,138,135,142,143];
-  const months = ['T10','T11','T12','T1','T2','T3'];
-  const pmax = Math.max(...payVals);
-  document.getElementById('pay-chart').innerHTML = payVals.map((v,i)=>`
-    <div class="chart-bar" style="height:${Math.round(v/pmax*100)}px;background:${i===5?'#3b82f6':'#93c5fd'}" title="${v}M ₫"></div>`).join('');
-  document.getElementById('pay-labels').innerHTML = months.map(m=>`<span class="chart-label">${m}</span>`).join('');
-
-  // Top performers
-  const top = [
-    {name:'Phạm Thu Hà',pos:'Quản lý',store:'Bình Thạnh',days:22,h:176,viol:0,score:98},
-    {name:'Nguyễn Thị Lan',pos:'Trưởng ca',store:'Quận 1',days:21,h:168,viol:0,score:95},
-    {name:'Võ Thanh Thảo',pos:'Trưởng ca',store:'Bình Thạnh',days:21,h:168,viol:1,score:90},
-    {name:'Đỗ Quốc Bảo',pos:'Nhân viên',store:'Ninh Kiều',days:19,h:152,viol:2,score:72},
-  ];
-  document.getElementById('top-tbody').innerHTML = top.map((e,i)=>`
-    <tr>
-      <td><b style="color:${i<3?'#ca8a04':'var(--text3)'}">#${i+1}</b></td>
-      <td><div class="flex items-center gap-2"><div class="emp-avatar">${e.name.charAt(0)}</div><div><div style="font-weight:600;font-size:13px">${e.name}</div><div style="font-size:11px;color:var(--text3)">${e.pos}</div></div></div></td>
-      <td style="color:var(--text2);font-size:12px">${e.store}</td>
-      <td><span class="badge badge-green">${e.days} ca</span></td>
-      <td style="font-size:12px">${e.h}h</td>
-      <td><span class="badge ${e.viol>0?'badge-red':'badge-green'}">${e.viol}</span></td>
-      <td><div class="flex items-center gap-2"><div class="progress" style="flex:1"><div class="progress-fill" style="width:${e.score}%"></div></div><span style="font-size:12px;font-weight:600;min-width:30px">${e.score}%</span></div></td>
-    </tr>`).join('');
-})();
-
-// ─── EMPLOYEES ────────────────────────────────────────────────────────────────
-const STS = {active:{cls:'badge-green',lbl:'Đang làm'},probation:{cls:'badge-yellow',lbl:'Thử việc'},terminated:{cls:'badge-gray',lbl:'Nghỉ việc'}};
-function renderEmployees(){
-  const q = (document.getElementById('emp-search').value||'').toLowerCase();
-  const st = document.getElementById('emp-status').value;
-  const sv = document.getElementById('emp-store').value;
-  const filtered = EMPLOYEES.filter(e=>
-    (!q||e.name.toLowerCase().includes(q)||e.phone.includes(q)||e.code.includes(q)||e.position.toLowerCase().includes(q))&&
-    (!st||e.status===st)&&(!sv||e.store===sv)
-  );
-  const PER=10; const pages=Math.ceil(filtered.length/PER);
-  if(empPage>pages) empPage=1;
-  const slice = filtered.slice((empPage-1)*PER, empPage*PER);
-  document.getElementById('emp-tbody').innerHTML = slice.length ? slice.map(e=>`
-    <tr>
-      <td><code style="font-size:11px;background:#f1f5f9;padding:2px 7px;border-radius:5px;color:var(--text2)">${e.code}</code></td>
-      <td><div class="flex items-center gap-2"><div class="emp-avatar">${e.name.charAt(0)}</div><div><div style="font-weight:600;font-size:13px">${e.name}</div><div style="font-size:11px;color:var(--text3)">${e.email}</div></div></div></td>
-      <td style="color:var(--text2);font-size:12px">${e.phone}</td>
-      <td style="font-size:12px">${e.position}</td>
-      <td><span class="badge badge-blue" style="font-size:10px">🏪 ${e.store}</span></td>
-      <td style="font-size:12px;color:var(--text2)">${e.hire}</td>
-      <td style="font-size:12px">${e.hourly?fmtVND(e.hourly)+' ₫/h':fmtM(e.salary)}</td>
-      <td><span class="badge ${STS[e.status].cls}">${STS[e.status].lbl}</span></td>
-      <td><button class="btn btn-sm" onclick="openEmpModal(${e.id})">✏ Sửa</button></td>
-    </tr>`).join('') : '<tr><td colspan="9" class="empty"><div class="empty-icon">🔍</div>Không tìm thấy nhân viên nào</td></tr>';
-
-  // Pagination
-  const pg = document.getElementById('emp-pagination');
-  pg.innerHTML = pages>1 ? Array.from({length:pages},(_,i)=>
-    `<button class="btn ${empPage===i+1?'btn-primary':''}" onclick="empPage=${i+1};renderEmployees()">${i+1}</button>`
-  ).join('') : '';
-}
-renderEmployees();
-
-// ─── ATTENDANCE ───────────────────────────────────────────────────────────────
-function renderAttendance(){
-  const stf = document.getElementById('att-store-filter').value;
-  const data = stf ? ATTENDANCE.filter(a=>a.store===stf) : ATTENDANCE;
-  const SM = {present:'badge-green',late:'badge-yellow',absent:'badge-red'};
-  const SL = {present:'Có mặt',late:'Đi trễ',absent:'Vắng'};
-  document.getElementById('att-count').textContent = data.length+' bản ghi';
-  document.getElementById('att-tbody').innerHTML = data.map(a=>`
-    <tr>
-      <td style="font-weight:600;font-size:12px">${a.date}</td>
-      <td><div style="font-weight:500">${a.emp}</div></td>
-      <td style="font-size:12px;color:var(--text2)">${a.store}</td>
-      <td>${a.in?`<span style="${a.late>0?'color:var(--yellow);font-weight:600':''}">${a.in}</span>${a.late>0?` <span style="font-size:10px;color:var(--yellow)">(+${a.late}p)</span>`:'`'}` : '<span style="color:var(--text3)">—</span>'}</td>
-      <td>${a.out||'<span style="color:var(--text3)">—</span>'}</td>
-      <td>${a.hours?a.hours.toFixed(1)+'h':'—'}</td>
-      <td>${a.ot>0?`<span class="badge badge-blue">${a.ot.toFixed(1)}h</span>`:'—'}</td>
-      <td>${a.late>0?`<span class="badge badge-yellow">${a.late}p</span>`:'—'}</td>
-      <td><span class="badge ${SM[a.status]}">${SL[a.status]}</span></td>
-    </tr>`).join('');
-}
-renderAttendance();
-
-let checkedIn = false;
-function doCheckIn(method){
-  if(checkedIn){showToast('⚠️ Bạn đã check-in hôm nay rồi','warning');return;}
-  checkedIn=true;
-  const t = new Date().toLocaleTimeString('vi-VN',{hour:'2-digit',minute:'2-digit'});
-  const s = document.getElementById('checkin-status');
-  s.innerHTML=`<div style="background:var(--green-light);border:1px solid #bbf7d0;border-radius:10px;padding:12px 16px;margin-bottom:16px;display:flex;align-items:center;gap:10px"><span style="font-size:20px">✅</span><div><strong>Check-in thành công</strong> lúc ${t} qua ${method}<br><span style="font-size:12px;color:var(--text2)">Hôm nay: Ca sáng 08:00–16:00 — Cửa hàng Ninh Kiều</span></div></div>`;
-  showToast(`✅ Check-in lúc ${t} (${method})`,'success');
-}
-function doCheckOut(){
-  if(!checkedIn){showToast('⚠️ Chưa check-in hôm nay','warning');return;}
-  const t = new Date().toLocaleTimeString('vi-VN',{hour:'2-digit',minute:'2-digit'});
-  const s = document.getElementById('checkin-status');
-  s.innerHTML=`<div style="background:#f0f9ff;border:1px solid #bae6fd;border-radius:10px;padding:12px 16px;margin-bottom:16px;display:flex;align-items:center;gap:10px"><span style="font-size:20px">🚪</span><div><strong>Check-out lúc ${t}</strong><br><span style="font-size:12px;color:var(--text2)">Tổng giờ làm hôm nay: 8.0h · Không đi trễ · 0h OT</span></div></div>`;
-  showToast(`🚪 Check-out lúc ${t} — 8.0h làm việc`,'success');
-  checkedIn=false;
-}
-
-// ─── SHIFTS ───────────────────────────────────────────────────────────────────
-const SHIFT_COLORS={'Ca sáng':'#16a34a','Ca chiều':'#2563eb','Ca tối':'#7c3aed','Ca full':'#ea580c'};
-const EMP_SCHED = {
-  1:{0:'Ca sáng',2:'Ca sáng',3:'Ca sáng',5:'Ca sáng'},
-  2:{1:'Ca chiều',3:'Ca chiều',4:'Ca chiều',6:'Ca chiều'},
-  3:{0:'Ca tối',1:'Ca tối',5:'Ca tối'},
-  4:{0:'Ca sáng',1:'Ca sáng',2:'Ca sáng',3:'Ca sáng',4:'Ca sáng'},
-  5:{2:'Ca chiều',3:'Ca chiều',4:'Ca sáng',6:'Ca chiều'},
-  6:{0:'Ca sáng',2:'Ca sáng',3:'Ca tối',5:'Ca sáng',6:'Ca sáng'},
+// ============================================================
+// STATE
+// ============================================================
+const state = {
+  mode: 'ĐC',
+  settings: {},
+  products: [],
+  ingredients: [],
+  lastAIRun: null
 };
-function getWeek(off){
-  const base = new Date('2026-03-26');
-  const day = base.getDay()||7;
-  const mon = new Date(base); mon.setDate(base.getDate()-day+1+off*7);
-  return Array.from({length:7},(_,i)=>{const d=new Date(mon);d.setDate(mon.getDate()+i);return d;});
-}
-function renderShifts(){
-  const dates = getWeek(weekOffset);
-  const dayNames=['Thứ 2','Thứ 3','Thứ 4','Thứ 5','Thứ 6','Thứ 7','CN'];
-  document.getElementById('week-label').textContent = `${dates[0].toLocaleDateString('vi-VN',{day:'2-digit',month:'2-digit'})} – ${dates[6].toLocaleDateString('vi-VN',{day:'2-digit',month:'2-digit',year:'numeric'})}`;
-  const todayStr = '2026-03-26';
-  const acvEmps = EMPLOYEES.filter(e=>e.status!=='terminated').slice(0,6);
-  let html=`<div class="shift-grid">
-    <div class="shift-head" style="text-align:left;padding-left:14px">Nhân viên</div>`;
-  dates.forEach((d,i)=>{
-    const ds=d.toISOString().split('T')[0];
-    const isTd=ds===todayStr;
-    html+=`<div class="shift-head ${isTd?'today':''}">${dayNames[i]}<br><span style="font-size:13px;font-weight:700">${d.getDate()}</span></div>`;
-  });
-  acvEmps.forEach(e=>{
-    html+=`<div class="shift-emp-col"><div class="emp-avatar" style="width:24px;height:24px;font-size:10px">${e.name.charAt(0)}</div><span>${e.name.split(' ').pop()}</span></div>`;
-    dates.forEach((_,i)=>{
-      const sh = EMP_SCHED[e.id]?.[i];
-      html+=`<div class="shift-cell">${sh
-        ?`<span class="shift-pill" style="background:${SHIFT_COLORS[sh]||'#64748b'}">${sh}</span>`
-        :`<span class="shift-add" onclick="addShiftQuick('${e.name}',${i})">+</span>`}</div>`;
-    });
-  });
-  html+=`</div>`;
-  document.getElementById('shift-card').innerHTML=html;
-}
-function addShiftQuick(name,day){
-  const d=['T2','T3','T4','T5','T6','T7','CN'][day];
-  showToast(`➕ Thêm ca cho ${name.split(' ').pop()} (${d})`,'info');
+
+// ============================================================
+// SETTINGS
+// ============================================================
+function loadSettings() {
+  state.settings = {
+    appsUrl: localStorage.getItem('pt_appsUrl') || '',
+    sheetId: localStorage.getItem('pt_sheetId') || '12h9gNsH7txvEue8KGGji3gMZ-M5AykTPzCa-KZVgegg',
+    openaiKey: localStorage.getItem('pt_openaiKey') || ''
+  };
+  document.getElementById('settingsAppsUrl').value = state.settings.appsUrl;
+  document.getElementById('settingsSheetId').value = state.settings.sheetId;
+  document.getElementById('settingsOpenAI').value = state.settings.openaiKey;
+  updateConnStatus();
 }
 
-// ─── PAYROLL ──────────────────────────────────────────────────────────────────
-let payApproved=false;
-function calcPayroll(){
-  const store=document.getElementById('pay-store').value;
-  if(!store){showToast('⚠️ Vui lòng chọn cửa hàng','warning');return;}
-  payApproved=false;
-  document.getElementById('pay-status-badge').textContent='Bản nháp';
-  document.getElementById('pay-status-badge').className='badge badge-yellow';
-  const month=document.getElementById('pay-month').value;
-  const year=document.getElementById('pay-year').value;
-  const emps = EMPLOYEES.filter(e=>e.status!=='terminated'&&(e.store===store));
-  const rows = emps.map(e=>{
-    const base=e.salary||0;
-    const hpay=(e.hourly||0)*e.hours;
-    const otH=Math.max(0,e.hours-160);
-    const otPay=(e.hourly||0)*1.5*otH;
-    const gross=base+hpay+otPay;
-    const tax=gross>11000000?(gross-11000000)*0.05:0;
-    const ins=Math.min(gross*0.105,3000000);
-    const net=Math.max(0,gross-tax-ins);
-    return{...e,hpay,otH,otPay,gross,tax,ins,net};
-  });
-  const totNet=rows.reduce((s,r)=>s+r.net,0);
-  const totGross=rows.reduce((s,r)=>s+r.gross,0);
-  document.getElementById('pay-empty').style.display='none';
-  document.getElementById('pay-summary-wrap').style.display='block';
-  document.getElementById('pay-title').textContent=`Bảng lương T${month}/${year} — ${store}`;
-  document.getElementById('pay-summary').innerHTML=`
-    <div class="stat-card"><div class="stat-label">Số nhân viên</div><div class="stat-value">${rows.length}</div></div>
-    <div class="stat-card"><div class="stat-label">Tổng lương gross</div><div class="stat-value" style="font-size:18px">${fmtVND(totGross)} ₫</div></div>
-    <div class="stat-card"><div class="stat-label">Tổng thực trả</div><div class="stat-value" style="font-size:18px;color:var(--green)">${fmtVND(totNet)} ₫</div></div>`;
-  document.getElementById('pay-tbody').innerHTML=rows.map(r=>`
-    <tr>
-      <td><div style="font-weight:600">${r.name}</div></td>
-      <td style="font-size:12px;color:var(--text2)">${r.position}</td>
-      <td>${Math.round(r.hours/8)}</td>
-      <td>${r.hours}</td>
-      <td>${r.otH.toFixed(1)}</td>
-      <td>${fmtVND(r.salary||r.hpay)}</td>
-      <td>${r.salary?'—':fmtVND(r.hpay)}</td>
-      <td>${r.otPay>0?fmtVND(r.otPay):'—'}</td>
-      <td style="color:var(--red)">0</td>
-      <td style="font-weight:500">${fmtVND(r.gross)}</td>
-      <td style="font-weight:700;color:var(--green)">${fmtVND(r.net)} ₫</td>
-    </tr>`).join('');
-  showToast(`✅ Đã tính lương cho ${rows.length} nhân viên`,'success');
-}
-function exportPayroll(){showToast('📥 Đã xuất file luong-3-2026.xlsx (demo mode)','info');}
-function approvePayroll(){
-  payApproved=true;
-  document.getElementById('pay-status-badge').textContent='Đã phê duyệt ✓';
-  document.getElementById('pay-status-badge').className='badge badge-green';
-  showToast('✅ Bảng lương đã được phê duyệt','success');
+function saveSettings() {
+  const url = document.getElementById('settingsAppsUrl').value.trim();
+  const sheetId = document.getElementById('settingsSheetId').value.trim();
+  const openaiKey = document.getElementById('settingsOpenAI').value.trim();
+  localStorage.setItem('pt_appsUrl', url);
+  localStorage.setItem('pt_sheetId', sheetId);
+  localStorage.setItem('pt_openaiKey', openaiKey);
+  state.settings = { appsUrl: url, sheetId, openaiKey };
+  document.getElementById('settingsSaved').innerHTML = `<div class="alert alert-success">✅ Đã lưu cài đặt!</div>`;
+  setTimeout(() => document.getElementById('settingsSaved').innerHTML = '', 3000);
+  updateConnStatus();
 }
 
-// ─── VIOLATIONS ───────────────────────────────────────────────────────────────
-const VSEV={warning:{cls:'badge-yellow',lbl:'Cảnh báo'},minor:{cls:'badge-blue',lbl:'Nhẹ'},major:{cls:'badge-red',lbl:'Nghiêm trọng'},critical:{cls:'badge-red',lbl:'Rất nghiêm trọng'}};
-function renderViolations(){
-  const sv=document.getElementById('viol-sev-filter').value;
-  const st=document.getElementById('viol-store-filter').value;
-  const data=VIOLATIONS.filter(v=>(!sv||v.severity===sv)&&(!st||v.store===st));
-  document.getElementById('viol-count').textContent=data.length;
-  document.getElementById('viol-tbody').innerHTML=data.map(v=>`
-    <tr>
-      <td style="font-size:12px;font-weight:600">${v.date}</td>
-      <td style="font-weight:500">${v.emp}</td>
-      <td style="font-size:12px;color:var(--text2)">${v.store}</td>
-      <td style="font-size:12px">${v.type}</td>
-      <td><span class="badge ${VSEV[v.severity].cls}">${VSEV[v.severity].lbl}</span></td>
-      <td style="color:var(--red);font-weight:600">-${fmtVND(v.penalty)} ₫</td>
-      <td style="font-size:12px;color:var(--text2);max-width:160px">${v.desc}</td>
-      <td style="font-size:12px;color:var(--text3)">${v.by}</td>
-    </tr>`).join('');
-}
-renderViolations();
-
-// ─── KPI ──────────────────────────────────────────────────────────────────────
-const KPI_DATA=[
-  {emp:'Phạm Thu Hà',metric:'Số ca đúng giờ',actual:22,target:20,score:100},
-  {emp:'Nguyễn Thị Lan',metric:'Tỷ lệ đúng giờ',actual:95,target:95,score:95},
-  {emp:'Võ Thanh Thảo',metric:'Số ca đúng giờ',actual:19,target:20,score:90},
-  {emp:'Huỳnh Thị Mai',metric:'Tỷ lệ đúng giờ',actual:88,target:95,score:80},
-  {emp:'Đỗ Quốc Bảo',metric:'Vi phạm trong tháng',actual:2,target:0,score:60},
-  {emp:'Trần Văn Hùng',metric:'Vi phạm trong tháng',actual:3,target:0,score:40},
-];
-function renderKpi(){
-  const ef=document.getElementById('kpi-emp-filter').value;
-  const data=ef?KPI_DATA.filter(k=>k.emp===ef):KPI_DATA;
-  document.getElementById('kpi-tbody').innerHTML=data.map(r=>`
-    <tr>
-      <td style="font-weight:500">${r.emp}</td>
-      <td style="font-size:12px">${r.metric}</td>
-      <td style="font-weight:600">${r.actual}</td>
-      <td style="color:var(--text3)">${r.target}</td>
-      <td><div class="flex items-center gap-2"><div class="progress" style="width:70px"><div class="progress-fill" style="width:${r.score}%;background:${r.score>=80?'var(--green-mid)':r.score>=60?'#fbbf24':'var(--red)'}"></div></div><span style="font-size:12px;font-weight:700;min-width:28px">${r.score}</span></div></td>
-    </tr>`).join('');
+function updateConnStatus() {
+  const dot = document.getElementById('connStatus');
+  if (state.settings.appsUrl) {
+    dot.className = 'status-dot status-online';
+    dot.title = 'Đã cấu hình Apps Script';
+  } else {
+    dot.className = 'status-dot status-offline';
+    dot.title = 'Chưa cấu hình Apps Script URL';
+  }
 }
 
-// Populate KPI emp filter
-const kef=document.getElementById('kpi-emp-filter');
-[...new Set(KPI_DATA.map(k=>k.emp))].forEach(n=>{
-  const o=document.createElement('option');o.value=n;o.textContent=n;kef.appendChild(o);
-});
-
-// Radar chart
-function drawRadar(){
-  const c=document.getElementById('kpi-radar');
-  if(!c)return;
-  const ctx=c.getContext('2d');
-  const cx=130,cy=115,R=80;
-  const labels=['Đúng giờ','Giờ công','Vi phạm','KPI tổng'];
-  const scores=[0.95,0.88,0.72,0.85];
-  ctx.clearRect(0,0,260,240);
-  for(let r=1;r<=4;r++){
-    ctx.beginPath();
-    for(let i=0;i<4;i++){
-      const a=Math.PI*2*i/4-Math.PI/2;
-      const x=cx+r*R/4*Math.cos(a),y=cy+r*R/4*Math.sin(a);
-      i===0?ctx.moveTo(x,y):ctx.lineTo(x,y);
+async function testConnection() {
+  const el = document.getElementById('connTestResult');
+  el.innerHTML = '<div class="loader"><div class="spinner"></div> Đang kiểm tra...</div>';
+  try {
+    const res = await callAppsScript({ action: 'ping' });
+    if (res.status === 'ok') {
+      el.innerHTML = `<div class="alert alert-success">✅ Kết nối thành công! Server time: ${res.timestamp}</div>`;
+      document.getElementById('connStatus').className = 'status-dot status-online';
+    } else {
+      el.innerHTML = `<div class="alert alert-error">❌ Lỗi: ${JSON.stringify(res)}</div>`;
     }
-    ctx.closePath();ctx.strokeStyle='rgba(100,116,139,0.15)';ctx.lineWidth=1;ctx.stroke();
+  } catch(e) {
+    el.innerHTML = `<div class="alert alert-error">❌ Không thể kết nối: ${e.message}</div>`;
   }
-  for(let i=0;i<4;i++){
-    const a=Math.PI*2*i/4-Math.PI/2;
-    ctx.beginPath();ctx.moveTo(cx,cy);ctx.lineTo(cx+R*Math.cos(a),cy+R*Math.sin(a));
-    ctx.strokeStyle='rgba(100,116,139,0.15)';ctx.stroke();
-    ctx.fillStyle='#64748b';ctx.font='500 11px Be Vietnam Pro,sans-serif';ctx.textAlign='center';
-    ctx.fillText(labels[i],cx+(R+16)*Math.cos(a),cy+(R+16)*Math.sin(a)+4);
-  }
-  ctx.beginPath();
-  for(let i=0;i<4;i++){
-    const a=Math.PI*2*i/4-Math.PI/2;
-    const x=cx+R*scores[i]*Math.cos(a),y=cy+R*scores[i]*Math.sin(a);
-    i===0?ctx.moveTo(x,y):ctx.lineTo(x,y);
-  }
-  ctx.closePath();ctx.fillStyle='rgba(34,197,94,0.2)';ctx.fill();
-  ctx.strokeStyle='#16a34a';ctx.lineWidth=2.5;ctx.stroke();
-  scores.forEach((s,i)=>{
-    const a=Math.PI*2*i/4-Math.PI/2;
-    const x=cx+R*s*Math.cos(a),y=cy+R*s*Math.sin(a);
-    ctx.beginPath();ctx.arc(x,y,4,0,Math.PI*2);
-    ctx.fillStyle='#16a34a';ctx.fill();
+}
+
+// ============================================================
+// API CALLS
+// ============================================================
+async function callAppsScript(params) {
+  const url = state.settings.appsUrl;
+  if (!url) throw new Error('Chưa cấu hình Apps Script URL. Vào Cài đặt để nhập.');
+  const qs = new URLSearchParams({ action: params.action, mode: state.mode });
+  const response = await fetch(`${url}?${qs}`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ ...params, mode: state.mode })
   });
+  if (!response.ok) throw new Error(`HTTP ${response.status}`);
+  return response.json();
 }
 
-// ─── STORES ───────────────────────────────────────────────────────────────────
-function renderStores(){
-  document.getElementById('store-grid').innerHTML=STORES.map(s=>`
-    <div class="store-card">
-      <div class="flex items-center gap-3" style="margin-bottom:12px">
-        <div class="store-icon">🏪</div>
-        <div style="flex:1">
-          <div style="font-weight:700;font-size:14px">${s.name}</div>
-          <code style="font-size:10px;background:#f1f5f9;padding:2px 7px;border-radius:4px;color:var(--text2)">${s.code}</code>
+// ============================================================
+// MODE SWITCHING
+// ============================================================
+function setMode(mode) {
+  state.mode = mode;
+  document.getElementById('modeBtn_DC').classList.toggle('active', mode === 'ĐC');
+  document.getElementById('modeBtn_TD').classList.toggle('active', mode === 'TĐ');
+  document.getElementById('topbarMode').textContent = mode === 'ĐC' ? '⚖️ Đường Chung' : '🍯 Tách Đường';
+  // Reload current page data
+  const activePage = document.querySelector('.page.active')?.id;
+  if (activePage === 'page-dashboard') loadDashboard();
+  else if (activePage === 'page-products') loadProducts();
+}
+
+// ============================================================
+// NAVIGATION
+// ============================================================
+const pageNames = {
+  dashboard: 'Dashboard',
+  costengine: 'Cost Engine',
+  products: 'Sản phẩm',
+  ingredients: 'Nguyên vật liệu',
+  ai: 'AI Analysis',
+  forecast: 'Forecasting',
+  settings: 'Cài đặt'
+};
+
+function showPage(pageId) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.getElementById('page-' + pageId).classList.add('active');
+  document.getElementById('nav-' + pageId).classList.add('active');
+  document.getElementById('topbarTitle').textContent = pageNames[pageId] || pageId;
+
+  // Lazy load data
+  if (pageId === 'dashboard') loadDashboard();
+  else if (pageId === 'products') loadProducts();
+  else if (pageId === 'ingredients') loadIngredients();
+}
+
+// ============================================================
+// FORMAT HELPERS
+// ============================================================
+function fmt(n) {
+  return n ? n.toLocaleString('vi-VN') + 'đ' : '—';
+}
+function pct(n) {
+  return n ? (n * 100).toFixed(1) + '%' : '—';
+}
+function cogsClass(cogs) {
+  if (!cogs) return '';
+  if (cogs < 0.28) return 'low';
+  if (cogs < 0.35) return 'mid';
+  return 'high';
+}
+function cogsBadge(cogs) {
+  if (!cogs) return '<span class="badge badge-gray">—</span>';
+  const p = (cogs * 100).toFixed(1);
+  if (cogs < 0.28) return `<span class="badge badge-green">${p}%</span>`;
+  if (cogs < 0.35) return `<span class="badge badge-yellow">${p}%</span>`;
+  return `<span class="badge badge-red">${p}%</span>`;
+}
+
+// ============================================================
+// DASHBOARD
+// ============================================================
+async function loadDashboard() {
+  try {
+    const res = await callAppsScript({ action: 'getAllProductCosts' });
+    if (res.error) { showDashError(res.error); return; }
+
+    state.products = res.data || [];
+    const prods = state.products.filter(p => p.cost > 0);
+    const avgCost = prods.reduce((s,p) => s + p.cost, 0) / (prods.length || 1);
+    const avgCogs = prods.filter(p=>p.cogs>0).reduce((s,p) => s + p.cogs, 0) / (prods.filter(p=>p.cogs>0).length || 1);
+    const highCogs = prods.filter(p => p.cogs > 0.35).length;
+
+    document.getElementById('statTotal').textContent = res.count;
+    document.getElementById('statAvgCost').textContent = Math.round(avgCost).toLocaleString('vi-VN');
+    document.getElementById('statAvgCogs').textContent = (avgCogs * 100).toFixed(1) + '%';
+    document.getElementById('statHighCogs').textContent = highCogs;
+
+    // Top COGs
+    const byCogs = [...prods].filter(p=>p.cogs>0).sort((a,b)=>b.cogs-a.cogs).slice(0,10);
+    document.getElementById('topCogsTable').innerHTML = renderMiniTable(byCogs, 'cogs');
+
+    // Top Cost
+    const byCost = [...prods].sort((a,b)=>b.cost-a.cost).slice(0,10);
+    document.getElementById('topCostTable').innerHTML = renderMiniTable(byCost, 'cost');
+
+  } catch(e) {
+    showDashError(e.message);
+  }
+}
+
+function renderMiniTable(items, sortBy) {
+  if (!items.length) return '<div class="empty-state"><div class="empty-icon">📊</div><div class="empty-title">Không có dữ liệu</div></div>';
+  return `<div class="table-wrap"><table>
+    <thead><tr><th>Tên SP</th><th style="text-align:right">Giá vốn</th><th style="text-align:right">COGs</th></tr></thead>
+    <tbody>${items.map(p => `
+      <tr>
+        <td><div style="font-size:12px;font-weight:600">${p.name}</div><div class="td-code">${p.code}</div></td>
+        <td class="td-money" style="text-align:right">${fmt(p.cost)}</td>
+        <td style="text-align:right">${cogsBadge(p.cogs)}</td>
+      </tr>`).join('')}
+    </tbody></table></div>`;
+}
+
+function showDashError(msg) {
+  const html = `<div class="alert alert-warning">⚠️ ${msg} — Kiểm tra cài đặt Apps Script URL</div>`;
+  document.getElementById('topCogsTable').innerHTML = html;
+  document.getElementById('topCostTable').innerHTML = html;
+}
+
+// ============================================================
+// PRODUCTS
+// ============================================================
+async function loadProducts() {
+  document.getElementById('prodModeLabel').textContent = state.mode;
+  document.getElementById('productsTableBody').innerHTML =
+    '<tr><td colspan="8"><div class="loader"><div class="spinner"></div> Đang tải...</div></td></tr>';
+  try {
+    const res = await callAppsScript({ action: 'getProducts' });
+    if (res.error) throw new Error(res.error);
+    state.products = res.data || [];
+    document.getElementById('prodCount').textContent = `${res.count} sản phẩm`;
+    renderProductsTable(state.products);
+  } catch(e) {
+    document.getElementById('productsTableBody').innerHTML =
+      `<tr><td colspan="8"><div class="alert alert-error">❌ ${e.message}</div></td></tr>`;
+  }
+}
+
+function renderProductsTable(products) {
+  if (!products.length) {
+    document.getElementById('productsTableBody').innerHTML =
+      '<tr><td colspan="8" style="text-align:center;padding:32px;color:var(--gray-400)">Không tìm thấy sản phẩm</td></tr>';
+    return;
+  }
+  document.getElementById('productsTableBody').innerHTML = products.map(p => `
+    <tr>
+      <td><span class="td-code">${p.code || '—'}</span></td>
+      <td><span style="font-weight:600">${p.name || '—'}</span></td>
+      <td><span class="badge badge-gray">${p.group || '—'}</span></td>
+      <td>${p.size || p.unit || '—'}</td>
+      <td class="td-money" style="text-align:right">${fmt(p.cost)}</td>
+      <td class="td-money" style="text-align:right">${fmt(p.price1)}</td>
+      <td style="text-align:right">${cogsBadge(p.cogs1)}</td>
+      <td><button class="btn btn-secondary btn-sm" onclick="quickCost('${p.code}')">Tính</button></td>
+    </tr>`).join('');
+}
+
+function filterProducts() {
+  const q = document.getElementById('prodSearch').value.toLowerCase();
+  const filtered = state.products.filter(p =>
+    (p.name || '').toLowerCase().includes(q) ||
+    (p.code || '').toLowerCase().includes(q) ||
+    (p.group || '').toLowerCase().includes(q)
+  );
+  renderProductsTable(filtered);
+}
+
+function quickCost(code) {
+  showPage('costengine');
+  document.getElementById('costProductCode').value = code;
+  calculateCostUI();
+}
+
+// ============================================================
+// COST ENGINE
+// ============================================================
+async function calculateCostUI() {
+  const code = document.getElementById('costProductCode').value.trim();
+  if (!code) return;
+
+  const resultEl = document.getElementById('costResult');
+  resultEl.innerHTML = `<div class="card-header"><span class="card-icon">📋</span><div class="card-title">Đang tính...</div></div>
+    <div class="card-body"><div class="loader"><div class="spinner"></div> Đang tính giá vốn...</div></div>`;
+
+  try {
+    const res = await callAppsScript({ action: 'calculateCost', productCode: code });
+    if (res.error) {
+      resultEl.innerHTML = `<div class="card-header"><span class="card-icon">❌</span><div class="card-title">Lỗi</div></div>
+        <div class="card-body"><div class="alert alert-error">${res.error}</div></div>`;
+      return;
+    }
+
+    const maxSubtotal = Math.max(...res.breakdown.map(b => b.subtotal));
+    const breakedownHTML = res.breakdown.map(b => {
+      const barPct = maxSubtotal > 0 ? (b.subtotal / maxSubtotal * 100) : 0;
+      return `<div style="margin-bottom:12px">
+        <div class="flex justify-between items-center">
+          <div>
+            <div style="font-size:13px;font-weight:600">${b.name}</div>
+            <div class="text-xs text-muted">${b.qty} ${b.unit} × ${b.price.toLocaleString('vi-VN')}đ/${b.unit}</div>
+          </div>
+          <div style="font-weight:700;color:var(--gray-900)">${fmt(b.subtotal)}</div>
         </div>
-        <span class="badge ${s.active?'badge-green':'badge-gray'}">${s.active?'Hoạt động':'Tạm đóng'}</span>
-      </div>
-      <div style="font-size:12px;color:var(--text2);margin-bottom:6px">📍 ${s.address}</div>
-      <div style="font-size:11px;color:var(--text3);margin-bottom:8px">🗺 GPS: ${s.lat.toFixed(4)}, ${s.lng.toFixed(4)}</div>
-      <div style="font-size:12px;color:var(--text2);margin-bottom:10px">👤 Quản lý: <strong>${s.manager}</strong></div>
-      <div class="flex gap-2" style="flex-wrap:wrap">
-        <span class="badge badge-blue">👥 ${s.staff} nhân viên</span>
-        <span class="badge badge-gray">🌏 ${s.region}</span>
-      </div>
-    </div>`).join('');
-}
+        <div class="breakdown-bar"><div class="breakdown-bar-fill" style="width:${barPct}%"></div></div>
+      </div>`;
+    }).join('');
 
-// ─── MODALS ───────────────────────────────────────────────────────────────────
-function openModal(html){
-  const root=document.getElementById('modal-root');
-  root.innerHTML=`<div class="modal-backdrop" id="mbd" onclick="if(event.target.id==='mbd')closeModal()">${html}</div>`;
-}
-function closeModal(){document.getElementById('modal-root').innerHTML='';}
+    const warningsHTML = res.warnings?.length ?
+      `<div class="alert alert-warning">⚠️ ${res.warnings.join('<br>')}</div>` : '';
 
-function openEmpModal(id=null){
-  const e=id?EMPLOYEES.find(x=>x.id===id):null;
-  openModal(`<div class="modal">
-    <div class="modal-header">
-      <span class="modal-title">${e?'✏ Chỉnh sửa nhân viên':'＋ Thêm nhân viên mới'}</span>
-      <button class="modal-close" onclick="closeModal()">×</button>
-    </div>
-    <div class="modal-body">
-      <div class="form-grid">
-        <div class="form-row" style="grid-column:1/-1"><label class="label">Họ và tên *</label><input class="input" id="f-name" placeholder="Nguyễn Văn A" value="${e?e.name:''}"></div>
-        <div class="form-row"><label class="label">Email *</label><input class="input" type="email" id="f-email" placeholder="email@demo.vn" value="${e?e.email:''}"></div>
-        <div class="form-row"><label class="label">Số điện thoại</label><input class="input" id="f-phone" placeholder="0901 234 567" value="${e?e.phone:''}"></div>
-        <div class="form-row"><label class="label">CCCD / CMND</label><input class="input" placeholder="0xxxxxxxxx"></div>
-        <div class="form-row"><label class="label">Ngày sinh</label><input class="input" type="date"></div>
-        <div class="form-row"><label class="label">Vị trí *</label>
-          <select class="select" id="f-pos">
-            <option ${e?.position==='Nhân viên'?'selected':''}>Nhân viên</option>
-            <option ${e?.position==='Trưởng ca'?'selected':''}>Trưởng ca</option>
-            <option ${e?.position==='Quản lý'?'selected':''}>Quản lý</option>
-          </select>
+    resultEl.innerHTML = `
+      <div class="card-header">
+        <span class="card-icon">📋</span>
+        <div>
+          <div class="card-title">${res.productName}</div>
+          <div class="card-subtitle font-mono">${res.productCode} — Mode: ${res.mode}</div>
         </div>
-        <div class="form-row"><label class="label">Cửa hàng</label>
-          <select class="select" id="f-store">
-            ${STORES.map(s=>`<option ${e?.store===s.name?'selected':''}>${s.name}</option>`).join('')}
-          </select>
+      </div>
+      <div class="card-body">
+        ${warningsHTML}
+        <div style="background:linear-gradient(135deg,var(--green-900),var(--gray-900));border-radius:10px;padding:16px;color:white;margin-bottom:16px;display:flex;align-items:center;justify-content:space-between">
+          <div>
+            <div style="font-size:11px;color:var(--green-400);font-weight:700;letter-spacing:1px;text-transform:uppercase">TỔNG GIÁ VỐN</div>
+            <div style="font-size:28px;font-weight:800;margin-top:4px">${fmt(res.totalCost)}</div>
+          </div>
+          <div style="font-size:40px">🧮</div>
         </div>
-        <div class="form-row"><label class="label">Ngày vào làm *</label><input class="input" type="date" value="${e?e.hire:'2026-03-26'}"></div>
-        <div class="form-row"><label class="label">Lương cơ bản (₫)</label><input class="input" type="number" placeholder="0 nếu tính theo giờ" value="${e?e.salary||'':''}"></div>
-        <div class="form-row"><label class="label">Lương theo giờ (₫/h)</label><input class="input" type="number" placeholder="0 nếu lương cố định" value="${e?e.hourly||'':''}"></div>
-        <div class="form-row"><label class="label">Ngân hàng</label><input class="input" placeholder="Vietcombank, MB..."></div>
-        <div class="form-row"><label class="label">Số tài khoản</label><input class="input" placeholder="1234567890"></div>
-      </div>
-    </div>
-    <div class="modal-footer">
-      <button class="btn" onclick="closeModal()">Hủy</button>
-      <button class="btn btn-primary" onclick="saveEmp(${id})">✓ ${e?'Cập nhật':'Tạo nhân viên'}</button>
-    </div>
-  </div>`);
+        <div style="font-size:12px;font-weight:700;color:var(--gray-500);text-transform:uppercase;letter-spacing:0.8px;margin-bottom:12px">Chi tiết thành phần (${res.ingredientCount} NVL)</div>
+        ${breakedownHTML}
+      </div>`;
+  } catch(e) {
+    resultEl.innerHTML = `<div class="card-header"><span class="card-icon">❌</span><div class="card-title">Lỗi kết nối</div></div>
+      <div class="card-body"><div class="alert alert-error">${e.message}</div></div>`;
+  }
 }
 
-function saveEmp(id){
-  closeModal();
-  showToast(id?'✅ Cập nhật nhân viên thành công':'✅ Tạo nhân viên thành công','success');
-  renderEmployees();
+function switchInputTab(tab, el) {
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  el.classList.add('active');
+  document.getElementById('tabText').style.display = tab === 'text' ? 'block' : 'none';
+  document.getElementById('tabImage').style.display = tab === 'image' ? 'block' : 'none';
 }
 
-function openShiftModal(){
-  openModal(`<div class="modal">
-    <div class="modal-header"><span class="modal-title">📅 Thêm ca làm</span><button class="modal-close" onclick="closeModal()">×</button></div>
-    <div class="modal-body">
-      <div class="form-row"><label class="label">Nhân viên *</label>
-        <select class="select">${EMPLOYEES.filter(e=>e.status!=='terminated').map(e=>`<option>${e.name}</option>`).join('')}</select></div>
-      <div class="form-row"><label class="label">Cửa hàng *</label>
-        <select class="select">${STORES.map(s=>`<option>${s.name}</option>`).join('')}</select></div>
-      <div class="form-row"><label class="label">Ngày làm *</label><input class="input" type="date" value="2026-03-27"></div>
-      <div class="form-grid">
-        <div class="form-row"><label class="label">Giờ bắt đầu</label><input class="input" type="time" value="08:00" id="s-from"></div>
-        <div class="form-row"><label class="label">Giờ kết thúc</label><input class="input" type="time" value="16:00" id="s-to"></div>
-      </div>
-      <div class="form-row"><label class="label">Hoặc chọn ca mẫu nhanh</label>
-        <select class="select" onchange="applyTemplate(this.value)">
-          <option value="">— Chọn mẫu —</option>
-          <option value="08:00|16:00">☀️ Ca sáng (08:00–16:00)</option>
-          <option value="13:00|21:00">🌤 Ca chiều (13:00–21:00)</option>
-          <option value="16:00|22:00">🌙 Ca tối (16:00–22:00)</option>
-          <option value="08:00|22:00">⭐ Ca full (08:00–22:00)</option>
-        </select>
-      </div>
-      <div class="form-row"><label class="label">Ghi chú</label><input class="input" placeholder="Ghi chú thêm (tuỳ chọn)"></div>
-    </div>
-    <div class="modal-footer">
-      <button class="btn" onclick="closeModal()">Hủy</button>
-      <button class="btn btn-primary" onclick="saveShift()">✓ Thêm ca</button>
-    </div>
-  </div>`);
+async function parseRecipeUI() {
+  const text = document.getElementById('recipeText').value;
+  if (!text.trim()) return;
+  try {
+    const res = await callAppsScript({ action: 'parseRecipeText', text });
+    if (res.error) { alert('Lỗi: ' + res.error); return; }
+    alert(`Đã phân tích ${res.count} thành phần:\n${res.parsed.map(p => `${p.name}: ${p.qty} ${p.unit}`).join('\n')}`);
+  } catch(e) { alert('Lỗi: ' + e.message); }
 }
 
-function applyTemplate(v){if(!v)return;const[f,t]=v.split('|');document.getElementById('s-from').value=f;document.getElementById('s-to').value=t;}
-function saveShift(){closeModal();showToast('✅ Đã thêm ca làm thành công','success');renderShifts();}
+async function handleImageOCR(input) {
+  const file = input.files[0];
+  if (!file) return;
+  const key = state.settings.openaiKey;
+  if (!key) { document.getElementById('ocrStatus').textContent = '❌ Cần OpenAI API Key trong Cài đặt'; return; }
 
-function openViolModal(){
-  openModal(`<div class="modal">
-    <div class="modal-header"><span class="modal-title">⚠️ Ghi nhận vi phạm</span><button class="modal-close" onclick="closeModal()">×</button></div>
-    <div class="modal-body">
-      <div class="form-row"><label class="label">Nhân viên *</label>
-        <select class="select"><option value="">— Chọn nhân viên —</option>${EMPLOYEES.map(e=>`<option>${e.name} (${e.code})</option>`).join('')}</select></div>
-      <div class="form-row"><label class="label">Cửa hàng *</label>
-        <select class="select">${STORES.map(s=>`<option>${s.name}</option>`).join('')}</select></div>
-      <div class="form-row"><label class="label">Loại vi phạm *</label>
-        <select class="select">
-          <option>Đi trễ ca sáng — Cảnh báo — 20.000 ₫</option>
-          <option>Không mặc đồng phục — Nhẹ — 50.000 ₫</option>
-          <option>Thái độ phục vụ kém — Nghiêm trọng — 100.000 ₫</option>
-          <option>Vắng mặt không báo — Rất nghiêm trọng — 200.000 ₫</option>
-        </select>
-      </div>
-      <div class="form-row"><label class="label">Ngày vi phạm *</label><input class="input" type="date" value="2026-03-26"></div>
-      <div class="form-row"><label class="label">Mô tả chi tiết</label><textarea class="input" rows="3" placeholder="Mô tả sự việc..."></textarea></div>
-      <div class="form-row"><label class="label">Bằng chứng (URL ảnh)</label><input class="input" placeholder="https://..."></div>
-    </div>
-    <div class="modal-footer">
-      <button class="btn" onclick="closeModal()">Hủy</button>
-      <button class="btn btn-danger" onclick="saveViol()">⚠ Ghi nhận vi phạm</button>
-    </div>
-  </div>`);
+  document.getElementById('ocrStatus').innerHTML = '<div class="loader"><div class="spinner"></div> Đang OCR ảnh...</div>';
+
+  const reader = new FileReader();
+  reader.onload = async (e) => {
+    const base64 = e.target.result.split(',')[1];
+    try {
+      const res = await fetch('https://api.openai.com/v1/chat/completions', {
+        method: 'POST',
+        headers: { 'Authorization': 'Bearer ' + key, 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          model: 'gpt-4o-mini',
+          messages: [{
+            role: 'user',
+            content: [
+              { type: 'image_url', image_url: { url: 'data:image/jpeg;base64,' + base64 } },
+              { type: 'text', text: 'Extract the recipe ingredients from this image. Format each line as: "Ingredient Name - Quantity Unit". Return ONLY the ingredient lines, no other text.' }
+            ]
+          }],
+          max_tokens: 500
+        })
+      });
+      const data = await res.json();
+      if (data.error) throw new Error(data.error.message);
+      const text = data.choices[0].message.content;
+      document.getElementById('recipeText').value = text;
+      document.getElementById('ocrStatus').textContent = '✅ OCR thành công! Đã điền vào ô nhập công thức.';
+      switchInputTab('text', document.querySelectorAll('.tab-btn')[1]);
+    } catch(err) {
+      document.getElementById('ocrStatus').textContent = '❌ OCR thất bại: ' + err.message;
+    }
+  };
+  reader.readAsDataURL(file);
 }
-function saveViol(){closeModal();showToast('✅ Đã ghi nhận vi phạm','success');renderViolations();}
 
-function openStoreModal(){
-  openModal(`<div class="modal">
-    <div class="modal-header"><span class="modal-title">🏪 Thêm cửa hàng mới</span><button class="modal-close" onclick="closeModal()">×</button></div>
-    <div class="modal-body">
-      <div class="form-row"><label class="label">Tên cửa hàng *</label><input class="input" placeholder="TraSua Quận X"></div>
-      <div class="form-row"><label class="label">Mã cửa hàng *</label><input class="input" placeholder="TS-HCM-QX"></div>
-      <div class="form-row"><label class="label">Địa chỉ</label><input class="input" placeholder="123 Đường ABC, Quận X, TP.HCM"></div>
-      <div class="form-grid">
-        <div class="form-row"><label class="label">GPS Vĩ độ (Lat)</label><input class="input" type="number" step="0.000001" placeholder="10.7731"></div>
-        <div class="form-row"><label class="label">GPS Kinh độ (Lng)</label><input class="input" type="number" step="0.000001" placeholder="106.7031"></div>
-      </div>
-      <div class="form-row"><label class="label">Quản lý cửa hàng</label>
-        <select class="select">${EMPLOYEES.filter(e=>e.status==='active').map(e=>`<option>${e.name}</option>`).join('')}</select></div>
-    </div>
-    <div class="modal-footer">
-      <button class="btn" onclick="closeModal()">Hủy</button>
-      <button class="btn btn-primary" onclick="saveStore()">✓ Tạo cửa hàng</button>
-    </div>
-  </div>`);
+// ============================================================
+// INGREDIENTS
+// ============================================================
+async function loadIngredients() {
+  document.getElementById('ingredientsTableBody').innerHTML =
+    '<tr><td colspan="6"><div class="loader"><div class="spinner"></div> Đang tải...</div></td></tr>';
+  try {
+    const res = await callAppsScript({ action: 'getIngredients' });
+    if (res.error) throw new Error(res.error);
+    state.ingredients = res.data || [];
+    document.getElementById('ingCount').textContent = `${res.count} nguyên vật liệu`;
+    renderIngredientsTable(state.ingredients);
+  } catch(e) {
+    document.getElementById('ingredientsTableBody').innerHTML =
+      `<tr><td colspan="6"><div class="alert alert-error">❌ ${e.message}</div></td></tr>`;
+  }
 }
-function saveStore(){closeModal();showToast('✅ Đã tạo cửa hàng thành công','success');renderStores();}
 
-// ─── NOTIFICATIONS ────────────────────────────────────────────────────────────
-function showNotifPanel(){
-  openModal(`<div class="modal">
-    <div class="modal-header"><span class="modal-title">🔔 Thông báo</span><button class="modal-close" onclick="closeModal()">×</button></div>
-    <div class="modal-body" style="padding:0">
-      ${[
-        {icon:'⚠️',title:'Trần Văn Hùng — 3 lần vi phạm tháng này',sub:'Tự động cảnh cáo theo quy định',time:'Hôm nay 09:15',new:true},
-        {icon:'✅',title:'Bảng lương T2/2026 đã được phê duyệt',sub:'Admin phê duyệt — 138.2M ₫',time:'Hôm qua 17:30',new:true},
-        {icon:'📅',title:'Đỗ Quốc Bảo yêu cầu đổi ca thứ 5',sub:'Ca chiều 13:00–21:00 ngày 28/3',time:'Hôm qua 10:22',new:true},
-      ].map(n=>`<div style="display:flex;align-items:flex-start;gap:12px;padding:14px 18px;border-bottom:1px solid var(--border);${n.new?'background:#f8fafc':''}">
-        <span style="font-size:20px;flex-shrink:0">${n.icon}</span>
-        <div style="flex:1">
-          <div style="font-size:13px;font-weight:${n.new?'600':'500'}">${n.title}</div>
-          <div style="font-size:11px;color:var(--text2);margin-top:2px">${n.sub}</div>
-          <div style="font-size:10px;color:var(--text3);margin-top:4px">${n.time}</div>
+function renderIngredientsTable(items) {
+  if (!items.length) {
+    document.getElementById('ingredientsTableBody').innerHTML =
+      '<tr><td colspan="6" style="text-align:center;padding:32px;color:var(--gray-400)">Không có NVL</td></tr>';
+    return;
+  }
+  document.getElementById('ingredientsTableBody').innerHTML = items.map(i => `
+    <tr>
+      <td><span class="td-code">${i.code}</span></td>
+      <td><span style="font-weight:600">${i.name || '—'}</span></td>
+      <td><span class="badge badge-gray">${i.group || '—'}</span></td>
+      <td>${i.unitRetail || '—'}</td>
+      <td class="td-money" style="text-align:right">${i.priceRetail ? i.priceRetail.toLocaleString('vi-VN') + 'đ' : '—'}</td>
+      <td class="td-money" style="text-align:right">${i.priceAvg ? i.priceAvg.toLocaleString('vi-VN') + 'đ' : '—'}</td>
+    </tr>`).join('');
+}
+
+function filterIngredients() {
+  const q = document.getElementById('ingSearch').value.toLowerCase();
+  const filtered = state.ingredients.filter(i =>
+    (i.name || '').toLowerCase().includes(q) ||
+    (i.code || '').toLowerCase().includes(q) ||
+    (i.group || '').toLowerCase().includes(q)
+  );
+  renderIngredientsTable(filtered);
+}
+
+function showAddIngredient() {
+  document.getElementById('addIngModal').style.display = 'block';
+}
+
+async function saveIngredient() {
+  const ing = {
+    code: document.getElementById('newIngCode').value.trim(),
+    name: document.getElementById('newIngName').value.trim(),
+    group: document.getElementById('newIngGroup').value.trim(),
+    unitRetail: document.getElementById('newIngUnit').value.trim(),
+    priceRetail: parseFloat(document.getElementById('newIngPrice').value) || 0
+  };
+  if (!ing.code || !ing.name) { alert('Cần nhập Mã và Tên NVL'); return; }
+  try {
+    const res = await callAppsScript({ action: 'saveNewIngredient', ingredient: ing });
+    if (res.error) throw new Error(res.error);
+    alert('✅ Đã lưu NVL: ' + ing.name);
+    document.getElementById('addIngModal').style.display = 'none';
+    loadIngredients();
+  } catch(e) { alert('❌ Lỗi: ' + e.message); }
+}
+
+// ============================================================
+// AI ANALYSIS
+// ============================================================
+async function runAIAnalysisUI() {
+  const key = state.settings.openaiKey;
+  if (!key) {
+    document.getElementById('aiResultPanel').innerHTML =
+      '<div class="alert alert-warning">⚠️ Cần nhập OpenAI API Key trong Cài đặt trước khi chạy AI Analysis</div>';
+    return;
+  }
+
+  document.getElementById('aiStatus').innerHTML = '<div class="spinner"></div> Đang phân tích...';
+  document.getElementById('aiResultPanel').innerHTML = `
+    <div class="ai-panel">
+      <div class="loader" style="color:rgba(255,255,255,0.7)"><div class="spinner" style="border-color:rgba(255,255,255,0.2);border-top-color:var(--green-400)"></div> AI đang phân tích dữ liệu chi phí...</div>
+    </div>`;
+
+  try {
+    const res = await callAppsScript({ action: 'runAIAnalysis', openaiKey: key });
+    document.getElementById('aiStatus').innerHTML = '';
+
+    if (res.error) {
+      document.getElementById('aiResultPanel').innerHTML =
+        `<div class="alert alert-error">❌ ${res.error}</div>`;
+      return;
+    }
+
+    const { analysis } = res;
+    state.lastAIRun = res.generatedAt;
+
+    document.getElementById('aiResultPanel').innerHTML = `
+      <div class="ai-panel">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px">
+          <div style="font-size:18px;font-weight:800;color:white">🤖 AI Phân tích chi phí</div>
+          <div style="font-size:11px;color:var(--green-400)">${new Date(res.generatedAt).toLocaleString('vi-VN')} · ${res.productsAnalyzed} sản phẩm</div>
         </div>
-        ${n.new?'<span class="badge badge-blue" style="flex-shrink:0">Mới</span>':''}
-      </div>`).join('')}
-    </div>
-    <div class="modal-footer"><button class="btn btn-primary" onclick="closeModal()">Đánh dấu đã đọc</button></div>
-  </div>`);
+        <div class="ai-section">
+          <div class="ai-section-label">💡 Insight — Nhận định</div>
+          <div class="ai-section-content">${analysis.insight || '—'}</div>
+        </div>
+        <div class="ai-section">
+          <div class="ai-section-label">🎯 Recommendation — Đề xuất</div>
+          <div class="ai-section-content">${analysis.recommendation || '—'}</div>
+        </div>
+        <div class="ai-section">
+          <div class="ai-section-label">⚡ Action — Hành động</div>
+          <div class="ai-section-content">${analysis.action || '—'}</div>
+        </div>
+      </div>`;
+  } catch(e) {
+    document.getElementById('aiStatus').innerHTML = '';
+    document.getElementById('aiResultPanel').innerHTML =
+      `<div class="alert alert-error">❌ ${e.message}</div>`;
+  }
 }
-function showStore(){showToast('🏪 Lọc theo cửa hàng — coming soon','info');}
-function logout(){if(confirm('Bạn có chắc muốn đăng xuất?'))showToast('👋 Đăng xuất thành công','info');}
 
-// ─── TOAST ────────────────────────────────────────────────────────────────────
-function showToast(msg,type='success'){
-  const t=document.getElementById('toast');
-  const colors={success:'#0f172a',warning:'#92400e',info:'#1e3a5f'};
-  const el=document.createElement('div');
-  el.className='toast-item';
-  el.style.background=colors[type]||colors.success;
-  el.textContent=msg;
-  t.appendChild(el);
-  setTimeout(()=>{el.style.opacity='0';el.style.transition='opacity .3s';setTimeout(()=>el.remove(),300);},3500);
+function scheduleAI() {
+  alert('💡 Để chạy AI tự động hàng ngày:\n1. Vào Google Apps Script\n2. Vào Triggers → Add Trigger\n3. Chọn function: runAIAnalysis\n4. Event: Time-driven → Day timer → 8:00 AM');
 }
+
+// ============================================================
+// FORECAST
+// ============================================================
+let salesData = [];
+
+function handleSalesFile(input) {
+  const file = input.files[0];
+  if (!file) return;
+  // For XLSX parsing, we use a simple approach
+  alert('📋 File đã được chọn: ' + file.name + '\n\nHệ thống sẽ đọc dữ liệu từ sheet "Tất cả cửa hàng". Nhấn "Tạo dự báo" để tiếp tục.\n\nLưu ý: Cần nhập JSON thủ công theo format mẫu hoặc để Apps Script xử lý file.');
+}
+
+async function runForecastUI() {
+  let data = salesData;
+
+  // Try JSON input first
+  const jsonText = document.getElementById('salesJson').value.trim();
+  if (jsonText) {
+    try { data = JSON.parse(jsonText); } catch(e) { alert('❌ JSON không hợp lệ'); return; }
+  }
+
+  if (!data || !data.length) {
+    alert('⚠️ Cần nhập dữ liệu bán hàng. Dán JSON vào ô bên trái hoặc upload file Excel.');
+    return;
+  }
+
+  const days = parseInt(document.getElementById('forecastDays').value);
+  document.getElementById('forecastResult').innerHTML =
+    '<div class="loader"><div class="spinner"></div> Đang tạo dự báo...</div>';
+  document.getElementById('forecastSummary').querySelector('.card-body').innerHTML =
+    '<div class="loader"><div class="spinner"></div> Đang tính...</div>';
+
+  try {
+    const res = await callAppsScript({ action: 'generateForecast', salesData: data, days });
+    if (res.error) throw new Error(res.error);
+
+    // Summary
+    document.getElementById('forecastSummary').querySelector('.card-body').innerHTML = `
+      <div class="stats-grid" style="grid-template-columns:1fr 1fr;gap:12px">
+        <div class="stat-card green" style="padding:12px">
+          <div class="stat-label">Sản phẩm</div>
+          <div class="stat-value" style="font-size:20px">${res.productCount}</div>
+        </div>
+        <div class="stat-card yellow" style="padding:12px">
+          <div class="stat-label">Dự báo ${days} ngày</div>
+          <div class="stat-value" style="font-size:20px">${res.ingredientForecast.length}</div>
+          <div class="stat-sub">loại NVL</div>
+        </div>
+      </div>
+      <div style="margin-top:12px;padding:12px;background:var(--green-100);border-radius:8px">
+        <div style="font-size:11px;font-weight:700;color:var(--green-800);text-transform:uppercase">Chi phí dự báo</div>
+        <div style="font-size:20px;font-weight:800;color:var(--green-900)">${fmt(res.totalProjectedCost)}</div>
+      </div>`;
+
+    // Ingredient list
+    const warnings = res.warnings?.length ?
+      `<div class="alert alert-warning mb-4">⚠️ ${res.warnings.join('; ')}</div>` : '';
+
+    document.getElementById('forecastResult').innerHTML = `
+      ${warnings}
+      <div class="card">
+        <div class="card-header">
+          <span class="card-icon">📦</span>
+          <div>
+            <div class="card-title">Dự báo nhu cầu NVL — ${days} ngày tới</div>
+            <div class="card-subtitle">Xếp theo chi phí giảm dần</div>
+          </div>
+        </div>
+        <div class="card-body">
+          ${res.ingredientForecast.slice(0, 20).map((item, i) => `
+            <div class="forecast-card">
+              <div class="forecast-rank">${i+1}</div>
+              <div class="forecast-info">
+                <div class="forecast-name">${item.name}</div>
+                <div class="forecast-unit">${item.code} · ${item.unit}</div>
+              </div>
+              <div class="forecast-qty">
+                <div class="forecast-qty-val">${Math.ceil(item.totalQty).toLocaleString('vi-VN')} ${item.unit}</div>
+                <div class="forecast-cost">${fmt(item.totalCost)}</div>
+              </div>
+            </div>`).join('')}
+        </div>
+      </div>`;
+  } catch(e) {
+    document.getElementById('forecastResult').innerHTML = `<div class="alert alert-error">❌ ${e.message}</div>`;
+    document.getElementById('forecastSummary').querySelector('.card-body').innerHTML =
+      `<div class="alert alert-error">❌ ${e.message}</div>`;
+  }
+}
+
+// ============================================================
+// INIT
+// ============================================================
+document.addEventListener('DOMContentLoaded', () => {
+  loadSettings();
+  loadDashboard();
+});
 </script>
 </body>
 </html>
