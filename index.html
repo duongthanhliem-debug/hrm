@@ -1000,14 +1000,29 @@ async function testConnection() {
 async function callAppsScript(params) {
   const url = state.settings.appsUrl;
   if (!url) throw new Error('Chưa cấu hình Apps Script URL. Vào Cài đặt để nhập.');
-  const qs = new URLSearchParams({ action: params.action, mode: state.mode });
-  const response = await fetch(`${url}?${qs}`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ ...params, mode: state.mode })
+
+  // GAS Web App: must use GET to avoid CORS "Failed to fetch"
+  const qs = new URLSearchParams();
+  qs.set('action', params.action);
+  qs.set('mode', state.mode);
+  const skip = new Set(['action', 'mode']);
+  for (const [k, v] of Object.entries(params)) {
+    if (skip.has(k)) continue;
+    if (typeof v === 'object' && v !== null) {
+      qs.set(k, encodeURIComponent(JSON.stringify(v)));
+    } else if (v !== undefined && v !== null) {
+      qs.set(k, String(v));
+    }
+  }
+
+  const response = await fetch(`${url}?${qs.toString()}`, {
+    method: 'GET',
+    redirect: 'follow'
   });
-  if (!response.ok) throw new Error(`HTTP ${response.status}`);
-  return response.json();
+  if (!response.ok) throw new Error('HTTP ' + response.status + ': ' + response.statusText);
+  const text = await response.text();
+  try { return JSON.parse(text); }
+  catch(e) { throw new Error('Phản hồi không hợp lệ. Kiểm tra Apps Script URL & quyền truy cập.'); }
 }
 
 // ============================================================
