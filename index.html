@@ -1048,15 +1048,51 @@ async function runForecast() {
 // ORDER CONVERSION
 // ============================================================
 async function convertToOrder() {
-  if (!S.lastForecast || !S.lastForecast.length) { toast('Cần chạy Forecast trước','err'); return; }
+  if (!S.lastForecast || !S.lastForecast.length) { toast('Cần chạy Forecast trước', 'err'); return; }
   nav('order');
+  document.getElementById('orderPanel').innerHTML = '';
   document.getElementById('orderResult').innerHTML = '<div class="loader"><div class="spin"></div>Đang quy đổi...</div>';
+
   try {
-    var r = await api({ action:'convertToOrder', forecastData: S.lastForecast });
-    if (r.error) throw new Error(r.error);
-    renderOrder(r);
+    // Load NVL if not cached yet
+    if (!S.nvl || !S.nvl.length) {
+      var nr = await api({ action: 'getMaterials' });
+      if (nr.data) S.nvl = nr.data;
+    }
+
+    // Build NVL map
+    var nvlMap = {};
+    (S.nvl || []).forEach(function(n) { nvlMap[n.code] = n; });
+
+    // Client-side order conversion: CEIL(rawQty / packSize)
+    var orders = [];
+    var totalOrderCost = 0;
+    S.lastForecast.forEach(function(item) {
+      var nvl = nvlMap[item.code];
+      if (!nvl) {
+        orders.push({ code:item.code, name:item.name, rawQty:item.totalQty, rawUnit:item.unit,
+                      packSize:1, unitChan:item.unit, orderQty:Math.ceil(item.totalQty),
+                      priceChan:0, totalCost:0, orderedRaw:Math.ceil(item.totalQty),
+                      waste:0, wastePercent:0, found:false });
+        return;
+      }
+      var ps    = nvl.packSize  || 1;
+      var pc    = nvl.priceChan || (nvl.priceLe * ps) || 0;
+      var oq    = Math.ceil(item.totalQty / ps);
+      var or2   = oq * ps;
+      var waste = or2 - item.totalQty;
+      var wp    = or2 > 0 ? (waste / or2 * 100) : 0;
+      var cost  = oq * pc;
+      totalOrderCost += cost;
+      orders.push({ code:item.code, name:item.name, rawQty:item.totalQty, rawUnit:nvl.unitLe,
+                    packSize:ps, unitChan:nvl.unitChan, orderQty:oq, priceChan:pc,
+                    totalCost:cost, orderedRaw:or2, waste:waste, wastePercent:wp, found:true });
+    });
+    orders.sort(function(a, b) { return b.totalCost - a.totalCost; });
+    renderOrder({ orders: orders, totalOrderCost: totalOrderCost, count: orders.length });
   } catch(e) {
-    document.getElementById('orderResult').innerHTML = '<div class="alert alert-err">❌ '+e.message+'</div>';
+    document.getElementById('orderResult').innerHTML = '<div class="alert alert-err">❌ ' + e.message + '</div>';
+    toast('Lỗi quy đổi: ' + e.message, 'err');
   }
 }
 
