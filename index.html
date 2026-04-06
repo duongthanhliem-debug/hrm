@@ -891,36 +891,58 @@ async function runForecast() {
 
   document.getElementById('fcResult').innerHTML = '<div class="loader"><div class="spin"></div>Đang tạo dự báo...</div>';
   var sumCard = document.getElementById('fcSummaryCard');
-  if (sumCard) sumCard.innerHTML = '<div class="card"><div class="card-hd"><span class="card-icon">📊</span><div class="card-title">Tổng quan dự báo</div></div><div class="card-body"><div class="loader"><div class="spin"></div>Đang tính...</div></div></div>';
+  sumCard.innerHTML = '<div class="card"><div class="card-hd"><span class="card-icon">📊</span><div class="card-title">Tổng quan dự báo</div></div><div class="card-body"><div class="loader"><div class="spin"></div>Đang tính...</div></div></div>';
 
   try {
-    // ── Client-side forecast: fetch small payloads (recipes + NVL) ──
-    var [recRes, btpRes, nvlRes, spRes] = await Promise.all([
+    // ── Fetch all required data in parallel ──
+    // These actions ALL exist in both old and new Code.gs:
+    // getMaterials, getAllCosts (= getProductsByMode)
+    // getRecipesByMode + getBTPRecipes are NEW - handle gracefully if missing
+    var results = await Promise.allSettled([
       api({ action: 'getRecipesByMode' }),
       api({ action: 'getBTPRecipes' }),
       api({ action: 'getMaterials' }),
       api({ action: 'getProductsByMode' })
     ]);
 
-    if (recRes.error) throw new Error(recRes.error);
-    if (spRes.error)  throw new Error(spRes.error);
+    var recRes = results[0].status === 'fulfilled' ? results[0].value : { error: results[0].reason && results[0].reason.message };
+    var btpRes = results[1].status === 'fulfilled' ? results[1].value : { error: results[1].reason && results[1].reason.message };
+    var nvlRes = results[2].status === 'fulfilled' ? results[2].value : { error: results[2].reason && results[2].reason.message };
+    var spRes  = results[3].status === 'fulfilled' ? results[3].value : { error: results[3].reason && results[3].reason.message };
+
+    // Check if new actions are missing — means Apps Script not redeployed yet
+    if (recRes.error && recRes.error.indexOf('Unknown') !== -1) {
+      document.getElementById('fcResult').innerHTML =
+        '<div class="alert alert-err" style="font-size:13px">' +
+        '⚠️ <strong>Cần deploy lại Apps Script</strong> để dùng tính năng Forecast.<br><br>' +
+        'Hướng dẫn:<br>' +
+        '1. Mở Apps Script → Dán lại Code.gs mới nhất<br>' +
+        '2. <strong>Deploy → New deployment</strong> (KHÔNG chọn "Manage deployments")<br>' +
+        '3. Copy URL mới → Cập nhật vào Cài đặt<br>' +
+        '4. Kiểm tra kết nối rồi thử lại' +
+        '</div>';
+      sumCard.innerHTML = '<div class="card"><div class="card-hd"><span class="card-icon">⚠️</span><div class="card-title">Cần cập nhật Apps Script</div></div><div class="card-body"><div class="alert alert-err">Deploy lại Code.gs mới</div></div></div>';
+      toast('Cần deploy lại Apps Script — xem hướng dẫn', 'err');
+      return;
+    }
+
+    if (recRes.error) throw new Error('Recipe: ' + recRes.error);
+    if (spRes.error)  throw new Error('Products: ' + spRes.error);
 
     var recipes = recRes.data || {};
     var btpMap  = (btpRes.data) || {};
     var nvlList = (nvlRes.data) || [];
+    if (nvlList.length) S.nvl = nvlList;
 
     // Build IPOS → SP code map
     var iposMap = {};
     (spRes.data || []).forEach(function(p) { if (p.iposCode) iposMap[p.iposCode] = p.code; });
 
-    // Also cache NVL for use in order conversion
-    if (nvlList.length) S.nvl = nvlList;
-
-    // Aggregate sales by IPOS code
+    // Aggregate sales — deduplicate
     var dailyAvg = {};
     var seen = new Set();
     data.forEach(function(row) {
-      var ipos = String(row.iposCode || '').replace(/\u200b/g, '').trim();
+      var ipos = String(row.iposCode || '').replace(/​/g, '').trim();
       if (!ipos) return;
       var dk = ipos + '|' + (parseFloat(row.quantitySold) || 0);
       if (seen.has(dk)) return;
@@ -930,8 +952,8 @@ async function runForecast() {
     });
 
     // Expand product → ingredients
-    var ingForecast = {};  // standard: BTP + NVL
-    var btpDemand   = {};  // BTP quantities for rawonly expansion
+    var ingForecast = {};
+    var btpDemand   = {};
     var warnings    = [];
 
     Object.keys(dailyAvg).forEach(function(ipos) {
@@ -940,7 +962,7 @@ async function runForecast() {
       if (!spCode) { warnings.push('Không có mapping IPOS: ' + ipos); return; }
       var recipe = recipes[spCode];
       if (!recipe) { warnings.push('Không có công thức: ' + spCode); return; }
-      var fqty = (avg.totalSold / dataDays) * fcDays;  // daily_avg × forecast_days
+      var fqty = (avg.totalSold / dataDays) * fcDays;
       (recipe.ingredients || []).forEach(function(ing) {
         var totalQty = fqty * ing.qty;
         var isBTP = ing.code && ing.code.indexOf('BTP') === 0;
@@ -949,31 +971,29 @@ async function runForecast() {
           btpDemand[ing.code].totalQty += totalQty;
         }
         if (!ingForecast[ing.code]) ingForecast[ing.code] = { code: ing.code, name: ing.name, unit: ing.unit, totalQty: 0, totalCost: 0, isBTP: isBTP };
-        ingForecast[ing.code].totalQty += totalQty;
+        ingForecast[ing.code].totalQty  += totalQty;
         ingForecast[ing.code].totalCost += totalQty * (ing.price || 0);
       });
     });
 
-    // Expand BTP → raw NVL (for rawonly mode)
+    // Expand BTP → raw NVL (rawonly mode)
     var rawOnly = {};
     Object.keys(btpDemand).forEach(function(btpCode) {
       var bd  = btpDemand[btpCode];
       var btp = btpMap[btpCode];
       if (!btp || !btp.ingredients || !btp.ingredients.length) {
-        warnings.push('Thiếu công thức BTP: ' + btpCode);
+        warnings.push('Thiếu CT BTP: ' + btpCode);
         rawOnly[btpCode] = { code: btpCode, name: bd.name + ' (BTP)', unit: bd.unit, totalQty: bd.totalQty, totalCost: 0, isBTP: true };
         return;
       }
       var bs = btp.batchSize || 1;
       btp.ingredients.forEach(function(bi) {
-        var ratio  = bs > 0 ? bi.qtyPerBatch / bs : 0;
-        var rawQty = bd.totalQty * ratio;
+        var rawQty = bd.totalQty * (bs > 0 ? bi.qtyPerBatch / bs : 0);
         if (!rawOnly[bi.code]) rawOnly[bi.code] = { code: bi.code, name: bi.name, unit: bi.unit, totalQty: 0, totalCost: 0, isBTP: false };
-        rawOnly[bi.code].totalQty += rawQty;
+        rawOnly[bi.code].totalQty  += rawQty;
         rawOnly[bi.code].totalCost += rawQty * (bi.price || 0);
       });
     });
-    // Add direct NVL to rawOnly as well
     Object.keys(ingForecast).forEach(function(code) {
       var item = ingForecast[code];
       if (!item.isBTP) {
@@ -993,7 +1013,7 @@ async function runForecast() {
 
     // Render summary
     var modeLabel = S.fcMode === 'rawonly' ? '🧪 NVL thô' : '📦 Tiêu chuẩn';
-    document.getElementById('fcSummaryCard').innerHTML =
+    sumCard.innerHTML =
       '<div class="card">' +
         '<div class="card-hd"><span class="card-icon">📊</span><div><div class="card-title">Tổng quan dự báo</div><div class="card-sub">Daily avg × ' + fcDays + ' ngày</div></div></div>' +
         '<div class="card-body">' +
@@ -1004,7 +1024,7 @@ async function runForecast() {
           '<div style="background:var(--gold-l);border:1px solid var(--gold);border-radius:var(--rs);padding:12px">' +
             '<div style="font-size:10px;font-weight:700;color:var(--brown-m);text-transform:uppercase">Chi phí dự báo ' + fcDays + ' ngày</div>' +
             '<div style="font-size:20px;font-weight:800;color:var(--brown)">' + fmt(totalCost) + '</div>' +
-            '<div class="text-xs text-muted">Data ' + dataDays + ' ngày → TB ' + fmt(totalCost / fcDays) + '/ngày</div>' +
+            '<div class="text-xs text-muted">Data ' + dataDays + ' ngày → TB ' + fmt(Math.round(totalCost / fcDays)) + '/ngày</div>' +
           '</div>' +
           (warnings.length ? '<div class="alert alert-warn" style="margin-top:10px;font-size:11px">⚠️ ' + warnings.slice(0, 3).join(' · ') + (warnings.length > 3 ? '… (+' + (warnings.length - 3) + ')' : '') + '</div>' : '') +
         '</div>' +
@@ -1024,7 +1044,7 @@ async function runForecast() {
       '<div class="card">' +
         '<div class="card-hd flex justify-between items-center">' +
           '<div><div class="card-title">📦 Nhu cầu NVL — ' + fcDays + ' ngày tới</div>' +
-          '<div class="card-sub">' + (S.fcMode === 'rawonly' ? 'NVL thô (không BTP)' : 'Tiêu chuẩn') + ' · ' + list.length + ' loại · ' + data.length + ' bản ghi đầu vào</div></div>' +
+          '<div class="card-sub">' + (S.fcMode === 'rawonly' ? 'NVL thô (không BTP)' : 'Tiêu chuẩn') + ' · ' + list.length + ' loại · ' + data.length + ' bản ghi</div></div>' +
           '<div class="btn-group">' +
             '<button class="btn btn-green btn-sm" onclick="convertToOrder()">📋 Quy đổi đặt hàng</button>' +
             '<button class="btn btn-secondary btn-sm" onclick="exportFcExcel()">⬇ Excel</button>' +
@@ -1035,13 +1055,10 @@ async function runForecast() {
 
   } catch(e) {
     document.getElementById('fcResult').innerHTML = '<div class="alert alert-err">❌ ' + e.message + '</div>';
-    if (document.getElementById('fcSummaryCard')) {
-      document.getElementById('fcSummaryCard').innerHTML = '<div class="card"><div class="card-hd"><span class="card-icon">📊</span><div class="card-title">Tổng quan dự báo</div></div><div class="card-body"><div class="alert alert-err">❌ ' + e.message + '</div></div></div>';
-    }
+    sumCard.innerHTML = '<div class="card"><div class="card-hd"><span class="card-icon">📊</span><div class="card-title">Tổng quan dự báo</div></div><div class="card-body"><div class="alert alert-err">❌ ' + e.message + '</div></div></div>';
     toast('Forecast lỗi: ' + e.message, 'err');
   }
 }
-
 
 
 // ============================================================
